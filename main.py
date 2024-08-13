@@ -2,6 +2,7 @@ from fastapi import FastAPI, File, UploadFile
 from pydantic import BaseModel
 import parameters.locations as loc
 import parameters.forecast_type as type
+import parameters.variables as var
 
 app = FastAPI()
 
@@ -11,11 +12,24 @@ class forecastBody(BaseModel):
 
 @app.get("/locations")
 async def getLocations():
-    return loc.Locations().getLocations()
+    res = {
+        "locations": loc.Locations().getLocations()
+    }
+    return res
 
 @app.get("/forecastTypes")
 async def getForecastTypes():
-    return type.ForecastType().getTypes()
+    res = {
+        "forecastTypes": type.ForecastType().getTypes()
+    }
+    return res
+
+@app.get("/variables")
+async def getVariables():
+    res = {
+        "variables": var.Variables().getVariables()
+    }
+    return res
 
 @app.get("/forecast")
 async def getForecast(body: forecastBody):
