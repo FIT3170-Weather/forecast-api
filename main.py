@@ -4,7 +4,7 @@ import bodyParameters.locations as loc
 import bodyParameters.forecast_type as type
 import bodyParameters.variables as var
 
-app = FastAPI()
+app = FastAPI() # "uvicorn main:app" to run on localhost:8000
 
 """
 Get a list of valid locations. This includes cities and towns.
