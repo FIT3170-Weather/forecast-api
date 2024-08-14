@@ -11,14 +11,15 @@ Get a list of valid locations. This includes cities and towns.
 
 Returns:
     {
-        "locations": list[str]
+        string: {
+            "lat": double
+            "float": double
+        }
     }
 """
 @router.get("/locations")
 async def getLocations():
-    res = {
-        "locations": loc.Locations().getLocations()
-    }
+    res = loc.Locations().getLocations()
     return res
 
 """
