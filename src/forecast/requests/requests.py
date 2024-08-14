@@ -1,10 +1,10 @@
+from fastapi import APIRouter
 from pydantic import BaseModel
-import forecast.bodyParameters.locations as loc
-import forecast.bodyParameters.forecast_type as type
-import forecast.bodyParameters.variables as var
-from ... import main
+import src.forecast.bodyParameters.locations as loc
+import src.forecast.bodyParameters.forecast_type as type
+import src.forecast.bodyParameters.variables as var
 
-app = main.app
+router = APIRouter()
 
 """
 Get a list of valid locations. This includes cities and towns.
@@ -14,7 +14,7 @@ Returns:
         "locations": list[str]
     }
 """
-@app.get("/locations")
+@router.get("/locations")
 async def getLocations():
     res = {
         "locations": loc.Locations().getLocations()
@@ -29,7 +29,7 @@ Returns:
         "locations": list[str]
     }
 """
-@app.get("/forecastTypes")
+@router.get("/forecastTypes")
 async def getForecastTypes():
     res = {
         "forecastTypes": type.ForecastType().getTypes()
@@ -44,7 +44,7 @@ Returns:
         "locations": list[str]
     }
 """
-@app.get("/variables")
+@router.get("/variables")
 async def getVariables():
     res = {
         "variables": var.Variables().getVariables()
@@ -74,7 +74,7 @@ Returns:
         "precipitation": (optional) list[float],
     } 
 """    
-@app.get("/forecast")
+@router.get("/forecast")
 async def getForecast(body: forecastBody):
     res = {
         "success": False
