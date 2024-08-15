@@ -29,7 +29,7 @@ async def getCurrentWeather(body: currentBody):
         # Get coordinates of location
         coord = loc.Locations().getLocations()[body.location]
         lat, lon = coord["lat"], coord["lon"]
-        url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API_KEY}"
+        url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API_KEY}&units=metric"
         
         res = requests.get(url)
         if res.status_code == 200:

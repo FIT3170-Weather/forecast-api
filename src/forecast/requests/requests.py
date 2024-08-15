@@ -15,7 +15,7 @@ Returns:
             "lat": double
             "float": double
         }
-    }
+    }   
 """
 @router.get("/locations")
 async def getLocations():
