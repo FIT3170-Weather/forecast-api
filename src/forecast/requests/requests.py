@@ -75,7 +75,7 @@ Returns:
         "precipitation": (optional) list[float],
     } 
 """    
-@router.get("/forecast")
+@router.post("/forecast")
 async def getForecast(body: forecastBody):
     res = {
         "success": False
