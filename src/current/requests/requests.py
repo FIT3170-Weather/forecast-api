@@ -20,7 +20,7 @@ Arguments:
 Return:
     See: https://openweathermap.org/current#example_JSON
 """    
-@router.get("/current")
+@router.post("/current")
 async def getCurrentWeather(body: currentBody):
     
     isValidLocation = body.location in loc.Locations().getLocations()

@@ -1,35 +1,35 @@
 # forecast-api
 
 # Start up
-Run "/main.py" (NOTE: NOT /src/main.py)
-You may have to pip install dependencies such as uvicorn, fastapi etc.
+Run "/main.py" (NOTE: NOT /src/main.py) <br>
+You may have to pip install dependencies such as uvicorn, fastapi etc. <br><br>
 
 ## Current weather
-Request: GET localhost:8000/current
+Request: POST localhost:8000/current <br><br>
 
-Body: {
-    location: str
-}
+Body: { <br>
+    location: str <br>
+} <br><br>
 
-Response: https://openweathermap.org/current#example_JSON
+Response: https://openweathermap.org/current#example_JSON<br><br>
 
 ## Forecast
-Request: GET localhost:8000/forecast
+Request: POST localhost:8000/forecast<br><br>
 
-Body: {
-    location: str
-    forecastType: str
-    variables: list[str]
-}
+Body: {<br>
+    location: str<br>
+    forecastType: str<br>
+    variables: list[str]<br>
+}<br><br>
 
-Response: {
-        success: bool
-        temperature: list[float] (optional, only if requested)
-        humidity: list[float] (optional, only if requested)
-        precipitation: list[float] (optional, only if requested)
-}
+Response: {<br>
+        success: bool<br>
+        temperature: list[float] (optional, only if requested)<br>
+        humidity: list[float] (optional, only if requested)<br>
+        precipitation: list[float] (optional, only if requested)<br>
+}<br><br>
 
 ## Getting location, forecastType and variables
-Request: GET localhost:8000/location
-Request: GET localhost:8000/forecastTypes
-Request: GET localhost:8000/variables
+Request: GET localhost:8000/location<br>
+Request: GET localhost:8000/forecastTypes<br>
+Request: GET localhost:8000/variables<br>
