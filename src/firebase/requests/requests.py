@@ -3,6 +3,7 @@ from firebase_admin import firestore
 from firebase_admin import credentials
 from fastapi import APIRouter
 from src.firebase.response_models.responses import *
+from src.current.requests.requests import *
 
 # Initilizes Firebase Admin SDK
 cred = credentials.Certificate("serviceAccountKey.json")
@@ -96,7 +97,7 @@ Returns:
     "error":null
 }
 """
-@router.get("/profiles/{uid}", response_model=Response)
+@router.post("/profiles/{uid}", response_model=Response)
 async def getProfiles(uid: str):
     try:
         profile_ref = db.collection("profiles").document(uid)
@@ -136,7 +137,7 @@ Returns:
     "error":null
 }
 """    
-@router.get("/profiles/{uid}/alerts", response_model=AlertsResponse)
+@router.post("/profiles/{uid}/alerts", response_model=AlertsResponse)
 async def getAlerts(uid: str):
     try:
         profile_ref = db.collection("profiles").document(uid)
@@ -175,7 +176,7 @@ Returns:
     "error":null
 }
 """    
-@router.get("/profiles/{uid}/preferences", response_model=PreferencesResponse)
+@router.post("/profiles/{uid}/preferences", response_model=PreferencesResponse)
 async def getPreferences(uid: str):
     try:
         profile_ref = db.collection("profiles").document(uid)
@@ -192,8 +193,24 @@ async def getPreferences(uid: str):
     except Exception as e:
         return PreferencesResponse(status="error", error=f"An error occurred: {str(e)}")
 
+
+@router.post("/profiles/{uid}/preferences/forecast")
+async def getPreferencesForecast(uid: str):
+    try:
+        response = await getPreferences(uid)
+        res = {}
+        locations = response.data.locations
+        for loc in locations:
+            
+            res[loc] = await getCurrentWeather(currentBody(location=loc))
+        return {"success": True, "data": res}
+
+    except Exception as e:
+        return {"success": False}
+
 #TODO: Create a template for the default profile creation
 #TODO: Implement the google sign in method
 #TODO: Implement the POST method to write data into the DATABASE
 #TODO: Implement the PUT method to update the data in the DATABASE
 #TODO: Upon login/account creation, check if the profile exists in the database, if not, create a new profile using the template and assign default values.
+

@@ -34,3 +34,5 @@ class PreferencesResponse(BaseModel):
     status: str
     data: Preferences
     error: Union[str, None] = None
+
+
