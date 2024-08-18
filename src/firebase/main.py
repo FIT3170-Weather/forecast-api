@@ -1,10 +1,13 @@
 #BRO!! I have no idea where to do my fucking APIs so I'm doing it here,
 # if I'm wrong(DEFINITELY) please guide me -- Hanideepu
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, Header
+import firebase_admin._auth_utils
+import firebase_admin.auth
 from pydantic import BaseModel
 from firebase_config import db
 import firebase_admin
+from firebase_admin import auth
 
 app = FastAPI()
 
@@ -26,6 +29,21 @@ default_profile_data = {
     },
 }
 
+#Get UID from Google auth database
+async def get_current_user_id(authorization: str = Header(None)):
+    if authorization is None or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization")
+    
+    id_token = authorization.split("Bearer ")[1]
+
+    try:
+        # Verify the ID token and extract the UID
+        decoded_token = auth.verify_id_token(id_token)
+        user_id = decoded_token['uid']
+        return user_id
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid token or token expired")
+    
 #API to create user
 @app.post("/create_profile/{user_id}")
 async def create_profile(user_id: str):
