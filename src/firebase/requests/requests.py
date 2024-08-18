@@ -17,6 +17,25 @@ db = firestore.client()
 router = APIRouter()
 
 
+# Default profile data, edits can be done if wanted to
+default_profile_data = {
+    "alerts": {
+        "rain": True,
+        "wind": True,
+        "thunderstorms": True,
+        "temparature": True,
+    },
+    "preferences": {
+        "locations": ["kuala-lumpur", "petaling-jaya", "subang-jaya"],
+    },
+    "profile_data": {
+        "email": "",
+        "password": "",
+        "username": "",
+    },
+}
+
+
 """
 Returns a JSON of every profile there is in the database
 
@@ -209,31 +228,6 @@ async def getPreferencesForecast(uid: str):
     except Exception as e:
         return {"success": False}
 
-#TODO: Create a template for the default profile creation
-#TODO: Implement the google sign in method
-#TODO: Implement the POST method to write data into the DATABASE
-#TODO: Implement the PUT method to update the data in the DATABASE
-#TODO: Upon login/account creation, check if the profile exists in the database, if not, create a new profile using the template and assign default values.
-
-
-
-# Default profile data, edits can be done if wanted to
-default_profile_data = {
-    "alerts": {
-        "rain": True,
-        "wind": True,
-        "thunderstorms": True,
-        "temparature": True,
-    },
-    "preferences": {
-        "locations": ["kuala-lumpur", "petaling-jaya", "subang-jaya"],
-    },
-    "profile_data": {
-        "email": "",
-        "password": "",
-        "username": "",
-    },
-}
 
 #API to create user
 @router.post("/create_profile/{user_id}")
