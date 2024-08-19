@@ -102,7 +102,8 @@ Returns:
 @router.post("/forecast")
 async def getForecast(body: forecastBody):
     res = {
-        "success": False
+        "success": False,
+        "forecast": {},
     }
     
     # Check if request body is valid
@@ -117,13 +118,31 @@ async def getForecast(body: forecastBody):
         return res
     
     # Return requested variables
+    # Hourly
+    if (body.forecastType == "hourly"):
+        hours = getRemainingHours() # Hours left in day until 23:00
+        data = mock_res_hourly
+        
+        # Data for remaining hours
+        for v in body.variables:
+            data[v] = data[v][-len(hours):]
+        
+        # Each hour forecast
+        for i in range(len(hours)):
+            res["forecast"][hours[i]] = {}
+            # Each variable
+            for v in body.variables:
+                res["forecast"][hours[i]][v] = data[v][i]    
+        res["success"] = True
+        
+        return res
+    
+    # Daily
+    # TODO: Wait and see how model returns data before changing
     for v in body.variables:
-        res[v] = mock_res_daily[v]
+        res["forecast"][v] = mock_res_daily[v]
     res["success"] = True
     
-    return {
-        "datetime": filterHourlyForecast()
-    }
     return res
 
 """
@@ -131,13 +150,21 @@ Determine hours from (CURRENT HOUR + 1) until 23:00.
 
 Used to prevent request from returning forecast for past time.
 """
-def filterHourlyForecast():
-    current_hour = dt.datetime.now().hour
+def getRemainingHours():
+    current_datetime = dt.datetime.now()
+    current_hour = current_datetime.hour
     hours_left_in_day = 23 - current_hour
     
     res = []
     for hour in range(1, hours_left_in_day + 1):
         hour += current_hour # To actual datetime hours left in day
-        res.append(hour)
+        res.append(dt.datetime(
+            year=current_datetime.year, 
+            month=current_datetime.month, 
+            day=current_datetime.day,
+            hour=hour,
+            minute=0,
+            second=0,
+            ))
 
     return res
