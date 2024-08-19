@@ -7,6 +7,29 @@ import src.forecast.bodyParameters.variables as var
 
 router = APIRouter()
 
+# TODO: Hardcoded variables returned for now, replace with models
+# TODO: Filter hourly results to only return forecasts after current time
+mock_res_hourly = {
+    "temperature": ["25.5", "26.3", "26.1", "26.0", "26.3", "25.5", "26.3", "26.1", "26.0", "26.3", "25.5", "26.3", "26.1", "26.0", "26.3", "25.5", "26.3", "26.1", "26.0", "26.3", "25.5", "26.3", "26.1"],
+    "humidity": ["80.1", "77.8", "77.8", "77.7", "83.0", "80.1", "77.8", "77.8", "77.7", "83.0", "80.1", "77.8", "77.8", "77.7", "83.0", "80.1", "77.8", "77.8", "80.1", "77.8", "77.8", "77.7", "83.0"],
+    "precipitation": ["0.0", "0.9", "1.0", "0.5", "0.8", "0.0", "0.9", "1.0", "0.5", "0.8", "0.0", "0.9", "1.0", "0.5", "0.8", "0.0", "0.9", "1.0", "0.5", "0.8", "0.0", "0.9", "1.0"],
+    "wind": ["10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "3.0"],
+    "pressure": ["900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800"],
+    "visibility": ["10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "15000"],
+    "cloud": ["25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29"],
+    "condition": ["Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Light Rain"],
+}
+mock_res_daily = {
+    "temperature": ["25.5", "26.3", "26.1", "26.0", "26.3", "25.5", "26.3"],
+    "humidity": ["80.1", "77.8", "77.8", "77.7", "83.0", "80.1", "77.8"],
+    "precipitation": ["0.0", "0.9", "1.0", "0.5", "0.8", "0.0", "0.9"],
+    "wind": ["10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0"],
+    "pressure": ["900", "800", "700", "900", "800", "700", "900"],
+    "visibility": ["10000", "12000", "13000", "10000", "12000", "13000", "10000"],
+    "cloud": ["25", "29", "16", "25", "29", "16", "25"],
+    "condition": ["Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny"],
+}
+
 """
 Get a list of valid locations. This includes cities and towns.
 
@@ -87,19 +110,6 @@ async def getForecast(body: forecastBody):
     isValidForecastType = body.forecastType in type.ForecastType().getTypes()
     isValidVariables = all(item in var.Variables().getVariables() for item in body.variables)
     
-    # TODO: Hardcoded variables returned for now, replace with models
-    # TODO: Filter hourly results to only return forecasts after current time
-    mock_res = {
-        "temperature": ["25.5", "26.3", "26.1", "26.0", "26.3", "25.5", "26.3", "26.1", "26.0", "26.3", "25.5", "26.3", "26.1", "26.0", "26.3", "25.5", "26.3", "26.1", "26.0", "26.3", "25.5", "26.3", "26.1"],
-        "humidity": ["80.1", "77.8", "77.8", "77.7", "83.0", "80.1", "77.8", "77.8", "77.7", "83.0", "80.1", "77.8", "77.8", "77.7", "83.0", "80.1", "77.8", "77.8", "80.1", "77.8", "77.8", "77.7", "83.0"],
-        "precipitation": ["0.0", "0.9", "1.0", "0.5", "0.8", "0.0", "0.9", "1.0", "0.5", "0.8", "0.0", "0.9", "1.0", "0.5", "0.8", "0.0", "0.9", "1.0", "0.5", "0.8", "0.0", "0.9", "1.0"],
-        "wind": ["10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "3.0"],
-        "pressure": ["900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800"],
-        "visibility": ["10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "15000"],
-        "cloud": ["25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29"],
-        "condition": ["Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Light Rain"],
-    }
-    
     # Invalid request body
     if (not isValidLocation \
         or not isValidForecastType \
@@ -108,7 +118,7 @@ async def getForecast(body: forecastBody):
     
     # Return requested variables
     for v in body.variables:
-        res[v] = mock_res[v]
+        res[v] = mock_res_daily[v]
     res["success"] = True
     
     return {
@@ -117,13 +127,17 @@ async def getForecast(body: forecastBody):
     return res
 
 """
-Filters hourly forecasts to only return data points after current hour until 23:00.
+Determine hours from (CURRENT HOUR + 1) until 23:00.
+
+Used to prevent request from returning forecast for past time.
 """
 def filterHourlyForecast():
     current_hour = dt.datetime.now().hour
     hours_left_in_day = 23 - current_hour
-    res = {}
-    for hour in range(hours_left_in_day + 1):
-        hour += current_hour
-        res[hour] = "test"
+    
+    res = []
+    for hour in range(1, hours_left_in_day + 1):
+        hour += current_hour # To actual datetime hours left in day
+        res.append(hour)
+
     return res
