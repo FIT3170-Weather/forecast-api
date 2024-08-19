@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
+import datetime as dt
 import src.forecast.bodyParameters.locations as loc
 import src.forecast.bodyParameters.forecast_type as type
 import src.forecast.bodyParameters.variables as var
@@ -96,7 +97,7 @@ async def getForecast(body: forecastBody):
         "pressure": ["900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800"],
         "visibility": ["10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "15000"],
         "cloud": ["25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29"],
-        "condition": ["Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny"],
+        "condition": ["Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Light Rain"],
     }
     
     # Invalid request body
@@ -110,4 +111,19 @@ async def getForecast(body: forecastBody):
         res[v] = mock_res[v]
     res["success"] = True
     
+    return {
+        "datetime": filterHourlyForecast()
+    }
+    return res
+
+"""
+Filters hourly forecasts to only return data points after current hour until 23:00.
+"""
+def filterHourlyForecast():
+    current_hour = dt.datetime.now().hour
+    hours_left_in_day = 23 - current_hour
+    res = {}
+    for hour in range(hours_left_in_day + 1):
+        hour += current_hour
+        res[hour] = "test"
     return res
