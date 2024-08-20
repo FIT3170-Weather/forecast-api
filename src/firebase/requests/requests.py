@@ -227,6 +227,17 @@ async def getPreferencesForecast(uid: str):
 
     except Exception as e:
         return {"success": False}
+    
+
+@router.post("/profiles/{uid}/get_email")
+async def get_email(uid: str):
+    try:
+        profile = await getProfiles(uid)
+        prof_data = profile.data[0].profile_data
+        return {"success": True, "data": prof_data.email}
+        
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 #API to create user

@@ -3,8 +3,11 @@ from pydantic import BaseModel
 
 
 class Alerts(BaseModel):
-    thunder: bool
     rain: bool
+    heatwave: bool
+    blizzard: bool
+    thunderstorms: bool
+    wind: bool
 
 class Preferences(BaseModel):
     locations: List[str]
