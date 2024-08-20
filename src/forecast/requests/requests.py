@@ -106,3 +106,70 @@ async def getForecast(body: forecastBody):
     res["success"] = True
     
     return res
+
+   
+"""
+Get the houlry and daily forecast of a location in one api call. Return of api call is fixed.
+
+Arguments:
+    {
+        "location": str
+    }
+
+Returns:
+    {
+        "success": bool,
+        "hourly": {
+            "time": list[str],
+            "temperature": list[float],
+            "pressure": list[float],
+            "humidity": list[float],
+            "precipitation": list[float],
+            "wind_speed": list[float],
+            "wind_direction": list[float],
+            "cloud_cover": list[float],
+        },
+
+        "daily": {
+            "time": list[str],
+            "temperature": list[float],
+            "pressure": list[float],
+            "humidity": list[float],
+            "precipitation": list[float],
+            "wind_speed": list[float],
+            "wind_direction": list[float],
+            "cloud_cover": list[float],
+        }
+    } 
+"""    
+@router.post("/weather-forecast")
+async def getForecast(body: forecastBody):
+    res = {
+        "success": False
+    }
+    
+    # Check if request body is valid
+    isValidLocation = body.location in loc.Locations().getLocations()
+    # isValidForecastType = body.forecastType in type.ForecastType().getTypes()
+    # isValidVariables = all(item in var.Variables().getVariables() for item in body.variables)
+    
+    # TODO: Hardcoded variables returned for now, replace with models
+
+    # TODO: Filter hourly results to only return forecasts after current time
+    mock_res = {
+        "temperature": ["25.5", "26.3", "26.1", "26.0", "26.3"],
+        "humidity": ["80.1", "77.8", "77.8", "77.7", "83.0"],
+        "precipitation": ["0.0", "0.9", "1.0", "0.5", "0.8"]
+    }
+    
+    # Invalid request body
+    if (not isValidLocation \
+        or not isValidVariables):
+        return res
+    
+    # Return requested variables
+    for v in body.variables:
+        res[v] = mock_res[v]
+    res["success"] = True
+    
+    return res
