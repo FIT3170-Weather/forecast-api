@@ -4,6 +4,11 @@ import requests_cache
 from retry_requests import retry
 import pandas as pd
 import src.forecast.bodyParameters.locations as loc
+import numpy as np
+
+# For weather forecasting model inference
+from keras.models import load_model
+import joblib
 
 # Function to get the previous houly data
 def getPreviousHourlyData(location_code, days=3):
@@ -65,3 +70,31 @@ def populateFromResponse(response):
     hourly_dataframe.set_index("date", inplace = True)
 
     return hourly_dataframe
+
+
+def makeForecast(dataframe, location_code, hours_to_forecast):
+    # convert dataframe to numpy arrayn
+    input = dataframe.to_numpy()
+
+    # Use valid location to load saved forecast model according 
+    model_location = f'../../models/{location_code}/model.h5'   # Load the model from an HDF5 file
+    model = load_model(model_location)
+
+    # Load feature scalier object according to location 
+    scaler_location = f'../../../weather-forecasting/models/{location_code}/scaler.pkl'
+    scaler = joblib.load(scaler_location)
+
+    # Must predict hours_to_forecast hours into the future by performing auto-regression
+    forecast = []
+    for i in range(hours_to_forecast):
+        # Scale the input
+        input_scaled = scaler.transform(input)
+
+        # Perform prediction
+        prediction = model.predict(input_scaled)
+        forecast.append(scaler.inverse_transform(prediction))
+
+        # Update dataframe with new prediction
+        dataframe = np.append(dataframe, prediction)
+        dataframe = np.delete(dataframe, 0)
+    pass

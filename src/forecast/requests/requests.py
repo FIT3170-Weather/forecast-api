@@ -1,6 +1,10 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
+
 from src.forecast.utils.forecast_utils import getPreviousHourlyData
+import datetime as dt
+from forecast.utils.forecast_utils import getPreviousHourlyData
+
 import src.forecast.bodyParameters.locations as loc
 import src.forecast.bodyParameters.forecast_type as type
 import src.forecast.bodyParameters.variables as var
@@ -11,11 +15,35 @@ import pytz
 
 router = APIRouter()
 
+# TODO: Hardcoded variables returned for now, replace with models
+# TODO: Filter hourly results to only return forecasts after current time
+mock_res_hourly = {
+    "temperature": ["25.5", "26.3", "26.1", "26.0", "26.3", "25.5", "26.3", "26.1", "26.0", "26.3", "25.5", "26.3", "26.1", "26.0", "26.3", "25.5", "26.3", "26.1", "26.0", "26.3", "25.5", "26.3", "26.1"],
+    "humidity": ["80.1", "77.8", "77.8", "77.7", "83.0", "80.1", "77.8", "77.8", "77.7", "83.0", "80.1", "77.8", "77.8", "77.7", "83.0", "80.1", "77.8", "77.8", "80.1", "77.8", "77.8", "77.7", "83.0"],
+    "precipitation": ["0.0", "0.9", "1.0", "0.5", "0.8", "0.0", "0.9", "1.0", "0.5", "0.8", "0.0", "0.9", "1.0", "0.5", "0.8", "0.0", "0.9", "1.0", "0.5", "0.8", "0.0", "0.9", "1.0"],
+    "wind": ["10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0", "3.0"],
+    "pressure": ["900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800", "700", "900", "800"],
+    "visibility": ["10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "12000", "13000", "10000", "15000"],
+    "cloud": ["25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29", "16", "25", "29"],
+    "condition": ["Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny", "Light Rain"],
+}
+mock_res_daily = {
+    "temperature": ["25.5", "26.3", "26.1", "26.0", "26.3", "25.5", "26.3"],
+    "humidity": ["80.1", "77.8", "77.8", "77.7", "83.0", "80.1", "77.8"],
+    "precipitation": ["0.0", "0.9", "1.0", "0.5", "0.8", "0.0", "0.9"],
+    "wind": ["10.0", "12.0", "5.0", "10.0", "12.0", "5.0", "10.0"],
+    "pressure": ["900", "800", "700", "900", "800", "700", "900"],
+    "visibility": ["10000", "12000", "13000", "10000", "12000", "13000", "10000"],
+    "cloud": ["25", "29", "16", "25", "29", "16", "25"],
+    "condition": ["Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny"],
+}
+
 FORECAST_PREV_DAYS = 3 # Past 3 days for inference
 FORECAST_CURRENT_DAYS = 1 # This means the current day also used in inference
 DAYS_TO_FORECAST = 7
 PREDICTED_ATTRIBUTES = ['temperature_2m', 'relative_humidity_2m', 'dew_point_2m', 'rain', 'pressure_msl', 'wind_speed_10m', 'wind_direction_10m']
 TIMEZONE = 'Asia/Singapore'
+
 
 """
 Get a list of valid locations. This includes cities and towns.
@@ -89,21 +117,14 @@ Returns:
 @router.post("/forecast")
 async def getForecast(body: forecastBody):
     res = {
-        "success": False
+        "success": False,
+        "forecast": {},
     }
     
     # Check if request body is valid
     isValidLocation = body.location in loc.Locations().getLocations()
     isValidForecastType = body.forecastType in type.ForecastType().getTypes()
     isValidVariables = all(item in var.Variables().getVariables() for item in body.variables)
-    
-    # TODO: Hardcoded variables returned for now, replace with models
-    # TODO: Filter hourly results to only return forecasts after current time
-    mock_res = {
-        "temperature": ["25.5", "26.3", "26.1", "26.0", "26.3"],
-        "humidity": ["80.1", "77.8", "77.8", "77.7", "83.0"],
-        "precipitation": ["0.0", "0.9", "1.0", "0.5", "0.8"]
-    }
     
     # Invalid request body
     if (not isValidLocation \
@@ -112,12 +133,57 @@ async def getForecast(body: forecastBody):
         return res
     
     # Return requested variables
+    # Hourly
+    if (body.forecastType == "hourly"):
+        hours = getRemainingHours() # Hours left in day until 23:00
+        data = mock_res_hourly
+        
+        # Data for remaining hours
+        for v in body.variables:
+            data[v] = data[v][-len(hours):]
+        
+        # Each hour forecast
+        for i in range(len(hours)):
+            res["forecast"][hours[i]] = {}
+            # Each variable
+            for v in body.variables:
+                res["forecast"][hours[i]][v] = data[v][i]    
+        res["success"] = True
+        
+        return res
+    
+    # Daily
+    # TODO: Wait and see how model returns data before changing
     for v in body.variables:
-        res[v] = mock_res[v]
+        res["forecast"][v] = mock_res_daily[v]
     res["success"] = True
     
     return res
 
+
+"""
+Determine hours from (CURRENT HOUR + 1) until 23:00.
+
+Used to prevent request from returning forecast for past time.
+"""
+def getRemainingHours():
+    current_datetime = dt.datetime.now()
+    current_hour = current_datetime.hour
+    hours_left_in_day = 23 - current_hour
+    
+    res = []
+    for hour in range(1, hours_left_in_day + 1):
+        hour += current_hour # To actual datetime hours left in day
+        res.append(dt.datetime(
+            year=current_datetime.year, 
+            month=current_datetime.month, 
+            day=current_datetime.day,
+            hour=hour,
+            minute=0,
+            second=0,
+            ))
+    
+    return res
    
 """
 Get the houlry and daily forecast of a location in one api call. Return of api call is fixed.
@@ -189,5 +255,3 @@ async def getWeatherForecast(location_code: str):
     # for v in body.variables:
     #     res[v] = mock_res[v]
     res["success"] = True
-    
-    return res
