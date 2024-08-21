@@ -33,6 +33,17 @@ async def getCurrentWeather(body: currentBody):
         
         res = requests.get(url)
         if res.status_code == 200:
-            return res.json()
+            res = res.json()
+            
+            # Get Subang coordinates
+            subang_coords = loc.Locations().getLocations()["subang-jaya"]
+            subang_lat, subang_lon = subang_coords["lat"], subang_coords["lon"]
+            
+            # If response coordinates == Subang coordinates
+            if (res["coord"]["lat"] == subang_lat and res["coord"]["lon"] == subang_lon):
+                # Change name to Subang Jaya (API incorrectly sets it as 'Petaling')
+                res["name"] = "Subang Jaya"
+                
+            return res
     
     return {"success": False}
