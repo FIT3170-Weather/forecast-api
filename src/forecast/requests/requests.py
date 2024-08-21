@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from forecast.utils.forecast_utils import getPreviousHourlyData
+from src.forecast.utils.forecast_utils import getPreviousHourlyData
 import src.forecast.bodyParameters.locations as loc
 import src.forecast.bodyParameters.forecast_type as type
 import src.forecast.bodyParameters.variables as var
@@ -8,15 +8,13 @@ import src.forecast.bodyParameters.variables as var
 from datetime import datetime
 import pytz
 
-# For weather forecasting model inference
-from keras.models import load_model
-import joblib
 
 router = APIRouter()
 
 FORECAST_PREV_DAYS = 3 # Past 3 days for inference
 FORECAST_CURRENT_DAYS = 1 # This means the current day also used in inference
 DAYS_TO_FORECAST = 7
+PREDICTED_ATTRIBUTES = ['temperature_2m', 'relative_humidity_2m', 'dew_point_2m', 'rain', 'pressure_msl', 'wind_speed_10m', 'wind_direction_10m']
 TIMEZONE = 'Asia/Singapore'
 
 """
@@ -155,36 +153,24 @@ Returns:
         }
     } 
 """    
-@router.post("/weather-forecast")
-async def getForecast(body: forecastBody):
+@router.get("/weather-forecast")
+async def getWeatherForecast(location_code: str):
     res = {
         "success": False
     }
 
-    #TODO: Change to query parameters
-    
-    location_code = body.location
-    
     # Check if request body is valid
     isValidLocation = location_code in loc.Locations().getLocations()
     
     # Invalid request body
     if (not isValidLocation):
         return res
-    
-    # Use valid location to load saved forecast model according 
-    model_location = f'../../models/{location_code}/model.h5'   # Load the model from an HDF5 file
-    model = load_model(model_location)
-
-    # Load feature scalier object according to location 
-    scaler_location = f'../../../weather-forecasting/models/{location_code}/scaler.pkl'
-    scaler = joblib.load(scaler_location)
 
     # Get the data for past 3 days (72 hours) of hourly weather data
     hourly_dataframe = getPreviousHourlyData(location_code, days=FORECAST_PREV_DAYS) # Dataframe should have 72 + 24 = 96 rows (72 for 3 past dat days and 24 for the current day)
 
     # calculate how many hours left in the current day according to current timezone
-    current_hour = datetime.datetime.now(pytz.timezone(TIMEZONE)).hour
+    current_hour = datetime.now(pytz.timezone(TIMEZONE)).hour
     day_hours_to_predict = 24 - current_hour # Hours left to predict for the current day
     total_hours_to_forecast = day_hours_to_predict + DAYS_TO_FORECAST*24 # Total hours to forecast for the current day and the next 7 days
     
@@ -195,11 +181,9 @@ async def getForecast(body: forecastBody):
     if hourly_dataframe.shape[0] != FORECAST_PREV_DAYS*24:
         return res
 
-    # convert to numpy array and make prediction
+    # Make the forecast
 
-    # Format the hourly data received to get the last 72 hours preceeding the current hour
-
-    # Use the model to predict the next remaining hours of the day and the next 7 days of data (auto regressively)
+    # Stich the forecast results as a JSON response
 
     # Return requested variables
     # for v in body.variables:
