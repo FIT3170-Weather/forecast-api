@@ -198,7 +198,7 @@ async def getPreferencesForecast(uid: str):
 """
 Returns a JSON of all subscribed emails
 
-Returns:
+Return:
 {
     "status":"success",
     "data":[
@@ -208,6 +208,12 @@ Returns:
                 "kuala-lumpur",
                 "petaling-jaya",
                 "subang-jaya"
+            ]
+        ],
+                [
+            "email": second- email,
+            [
+                "kuala-lumpur",
             ]
         ]
     ]
