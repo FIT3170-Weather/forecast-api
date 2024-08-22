@@ -137,13 +137,18 @@ def prepareForecastJSON(forecast_dataframe, total_hours_to_forecast, day_hours_t
 
     temperature = forecast_dataframe[PREDICTED_ATTRIBUTES[0]].values.tolist()
     humidity = forecast_dataframe[PREDICTED_ATTRIBUTES[1]].values.tolist()
-    dew_point = forecast_dataframe[PREDICTED_ATTRIBUTES[2]].values.tolist()
-    precipitation = forecast_dataframe[PREDICTED_ATTRIBUTES[3]].values.tolist()
-    pressure = forecast_dataframe[PREDICTED_ATTRIBUTES[4]].values.tolist()
-    wind_speed = forecast_dataframe[PREDICTED_ATTRIBUTES[5]].values.tolist()
-    wind_direction = forecast_dataframe[PREDICTED_ATTRIBUTES[6]].values.tolist()
 
-    real_feel = [heat_index(temperature[i], humidity[i]) for i in range(total_hours_to_forecast)]
+    real_feel = [round(heat_index(temperature[i], humidity[i])) for i in range(total_hours_to_forecast)]
+    temperature = [round(temperature[i]) for i in range(len(temperature))]
+    humidity = [round(humidity[i]) for i in range(len(humidity))]
+
+
+    dew_point = [round(i) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[2]].values.tolist()]
+    precipitation = [round(i, 1) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[3]].values.tolist()]
+    pressure = [round(i) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[4]].values.tolist()]
+    wind_speed = [round(i) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[5]].values.tolist()]
+    wind_direction = [round(i) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[6]].values.tolist()]
+    
 
     # Stich the forecast results as a JSON response
     result_dict["hourly"] = {
@@ -208,3 +213,45 @@ def wind_chill_index(temperature, wind_speed):
     """
     return (13.12 + 0.6215 * temperature - 11.37 * wind_speed**0.16 +
             0.3965 * temperature * wind_speed**0.16)
+
+def degrees_to_direction(degrees):
+    """
+    Convert wind direction from degrees to compass direction, handling degrees beyond 360.
+    
+    :param degrees: Wind direction in degrees (can be greater than 360)
+    :return: Compass direction as a string
+    """
+    # Wrap degrees to be within [0, 360)
+    degrees = degrees % 360
+
+    # Define the ranges for each compass direction
+    if (337.5 <= degrees < 360) or (0 <= degrees < 22.5):
+        return 'N'
+    elif 22.5 <= degrees < 45:
+        return 'NE'
+    elif 45 <= degrees < 67.5:
+        return 'ENE'
+    elif 67.5 <= degrees < 90:
+        return 'E'
+    elif 90 <= degrees < 112.5:
+        return 'ESE'
+    elif 112.5 <= degrees < 135:
+        return 'SE'
+    elif 135 <= degrees < 157.5:
+        return 'SSE'
+    elif 157.5 <= degrees < 180:
+        return 'S'
+    elif 180 <= degrees < 202.5:
+        return 'SSW'
+    elif 202.5 <= degrees < 225:
+        return 'SW'
+    elif 225 <= degrees < 247.5:
+        return 'WSW'
+    elif 247.5 <= degrees < 270:
+        return 'W'
+    elif 270 <= degrees < 292.5:
+        return 'WNW'
+    elif 292.5 <= degrees < 315:
+        return 'NW'
+    elif 315 <= degrees < 337.5:
+        return 'NNW'
