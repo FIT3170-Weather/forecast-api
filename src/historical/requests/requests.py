@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import requests
 import datetime as dt
 import src.forecast.bodyParameters.locations as loc
+from .wwo_weather_code import wwo_weather_code as weather_code
 
 router = APIRouter()
 
@@ -21,55 +22,85 @@ Return:
 """    
 @router.post("/historical")
 async def getCurrentWeather(body: historicalBody):
-    
     isValidLocation = body.location in loc.Locations().getLocations()
     
+    res = {"success": False}
+    
     if isValidLocation:
+        # Parameters for API
+        parameters = [
+            "temperature_2m",
+            "relative_humidity_2m",
+            "precipitation",
+            "pressure_msl",
+            "weather_code",
+            "cloud_cover",
+            "visibility",
+            "wind_speed_10m"
+        ]
+        
         # Get coordinates of location
         coord = loc.Locations().getLocations()[body.location]
         lat, lon = coord["lat"], coord["lon"]
         
-        parameters = [
-            "temperature_2m",
-            "relative_humidity_2m",
-            # "precipitation",
-            # "weather_code",
-            # "cloud_cover",
-            # "visibility",
-            # "wind_speed_10m"
-        ]
+        # Historical data from how many days ago
+        days_ago = 7
 
-        # Parameters
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly={','.join(parameters)}&past_days=2&forecast_days=0"
-
-        res = requests.get(url)
-        if res.status_code == 200:
-            res = res.json()
-            uniqueDates = getUniqueDates(res["hourly"]["time"])
-            
-            new = {}    
+        # Construct URL
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly={','.join(parameters)}&past_days={days_ago}&forecast_days=0"
+        resApi = requests.get(url)
+        
+        if resApi.status_code == 200:
+            resApi = resApi.json()
+            uniqueDates = getUniqueDates(resApi["hourly"]["time"])
+   
+            # For each day
             for i in range(len(uniqueDates)):
-                new[uniqueDates[i]] = {}
-                for parameter in parameters:   
-                    today = res["hourly"][parameter][i*24:(i*24)+24]
-                    avg = averageDay(today)
-                    # print(len(today), today)
-                    new[uniqueDates[i]][parameter] = avg
+                res[uniqueDates[i]] = {} # Create dictionary for each day
+                # For each parameter
+                for parameter in parameters:
+                    todayData = resApi["hourly"][parameter][i*24:(i*24)+24]
+                    # Do not average weather code
+                    if (parameter == "weather_code"):
+                        res[uniqueDates[i]][parameter] = todayData
+                    # Average hourly data
+                    else:
+                        avg = averageParameter(todayData)
+                        res[uniqueDates[i]][parameter] = avg
             
-            return new
+            res["success"] = True
+            
             return res
 
-    return {"success": False}
+    return res
 
+"""
+Returns a list of unique dates from a list of datetime objects
+
+Arguments:
+    datetimes: List[datetime]
+    
+Return:
+    dates: List[datetime]
+"""
 def getUniqueDates(datetimes):
     dates = []
     format = "%Y-%m-%dT%H:%M"
     for date in datetimes:
-        date = (dt.datetime.strptime(date, format)).date()
+        date = (dt.datetime.strptime(date, format)).date() # Parse string to datetime
         if (date not in dates):
-            dates.append(date)
+            dates.append(date)  # Unique date
     return dates
 
-def averageDay(variables):
-    return sum(variables)/len(variables)
+"""
+Averages a list of weather parameters
+
+Arguments:
+    datetimes: List[int/double]
+    
+Return:
+    dates: double
+"""
+def averageParameter(parameters):
+    return sum(parameters)/len(parameters)
 
