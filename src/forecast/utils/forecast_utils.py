@@ -7,9 +7,14 @@ import pandas as pd
 import src.forecast.bodyParameters.locations as loc
 import numpy as np
 
+
 # For weather forecasting model inference
 from keras.models import load_model
 import joblib
+
+
+PREDICTED_ATTRIBUTES = ['temperature_2m', 'relative_humidity_2m', 'dew_point_2m', 'rain', 'pressure_msl', 'wind_speed_10m', 'wind_direction_10m']
+
 
 # Function to get the previous houly data
 def getPreviousHourlyData(location_code, days=3):
@@ -110,29 +115,96 @@ def makeForecast(dataframe, location_code, hours_to_forecast):
     return forecast
 
 
+
+"""
+Prepare the forecast results as a JSON response
+
+"hourly_units": {
+    "time": "iso8601",
+    "temperature_2m": "°C",
+    "relative_humidity_2m": "%",
+    "dew_point_2m": "°C",
+    "rain": "mm",
+    "pressure_msl": "hPa",
+    "wind_speed_10m": "km/h",
+    "wind_direction_10m": "°"
+}
+"""
 def prepareForecastJSON(forecast_dataframe, total_hours_to_forecast, day_hours_to_predict, result_dict):
     
+    # Get each row as a list
+    forecast_results = forecast_dataframe.values.tolist()
+
+    temperature = forecast_dataframe[PREDICTED_ATTRIBUTES[0]].values.tolist()
+    humidity = forecast_dataframe[PREDICTED_ATTRIBUTES[1]].values.tolist()
+    dew_point = forecast_dataframe[PREDICTED_ATTRIBUTES[2]].values.tolist()
+    precipitation = forecast_dataframe[PREDICTED_ATTRIBUTES[3]].values.tolist()
+    pressure = forecast_dataframe[PREDICTED_ATTRIBUTES[4]].values.tolist()
+    wind_speed = forecast_dataframe[PREDICTED_ATTRIBUTES[5]].values.tolist()
+    wind_direction = forecast_dataframe[PREDICTED_ATTRIBUTES[6]].values.tolist()
+
+    real_feel = [heat_index(temperature[i], humidity[i]) for i in range(total_hours_to_forecast)]
+
     # Stich the forecast results as a JSON response
     result_dict["hourly"] = {
         "time": [],
-        "temperature": [],
-        "pressure": [],
-        "humidity": [],
-        "precipitation": [],
-        "wind_speed": [],
-        "wind_direction": [],
-        "cloud_cover": [],
+        "temperature": temperature[:day_hours_to_predict],
+        "real_feel": real_feel[:day_hours_to_predict],
+        "humidity": humidity[:day_hours_to_predict],
+        "precipitation": precipitation[:day_hours_to_predict],
+        "pressure": pressure[:day_hours_to_predict],
+        "wind_speed": wind_speed[:day_hours_to_predict],
+        "wind_direction": wind_direction[:day_hours_to_predict],
+        "dew_point": dew_point[:day_hours_to_predict]
     }
 
     result_dict["daily"] = {
         "time": [],
-        "temperature": [],
-        "pressure": [],
-        "humidity": [],
-        "precipitation": [],
-        "wind_speed": [],
-        "wind_direction": [],
-        "cloud_cover": [],
+        "temperature": temperature[:day_hours_to_predict],
+        "humidity": humidity[:day_hours_to_predict],
+        "dew_point": dew_point[:day_hours_to_predict],
+        "precipitation": precipitation[:day_hours_to_predict],
+        "pressure": pressure[:day_hours_to_predict],
+        "wind_speed": pressure[:day_hours_to_predict],
+        "wind_direction": pressure[:day_hours_to_predict],
     }
     
-    pass
+    return result_dict
+
+
+def heat_index(temperature, humidity):
+    """
+    Calculate the heat index.
+    
+    :param temperature: Temperature in degrees Celsius
+    :param humidity: Relative humidity as a percentage
+    :return: Heat index
+    """
+    T = temperature
+    H = humidity
+    
+    # Coefficients for the heat index formula
+    c1 = -8.78469475556
+    c2 = 1.61139411
+    c3 = 2.33854883889
+    c4 = -0.14611605
+    c5 = -0.012308094
+    c6 = -0.0164248277778
+    c7 = 0.002211732
+    c8 = 0.00072546
+    c9 = -0.000003582
+
+    heat_index_value = (c1 + c2*T + c3*H + c4*T*H + c5*T**2 +
+                        c6*H**2 + c7*T**2*H + c8*T*H**2 + c9*T**2*H**2)
+    return heat_index_value
+
+def wind_chill_index(temperature, wind_speed):
+    """
+    Calculate the wind chill index.
+    
+    :param temperature: Temperature in degrees Celsius
+    :param wind_speed: Wind speed in km/h
+    :return: Wind chill index
+    """
+    return (13.12 + 0.6215 * temperature - 11.37 * wind_speed**0.16 +
+            0.3965 * temperature * wind_speed**0.16)
