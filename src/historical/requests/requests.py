@@ -19,12 +19,31 @@ Arguments:
     }
     
 Return:
+    {
+        "sucess": bool
+        "historical": [
+            {
+                "date": datetime
+                "temperature_2m": double,
+                "relative_humidity_2m": double,
+                "precipitation": double,
+                "pressure_msl": double,
+                "weather_code": str,
+                "cloud_cover": double,
+                "visibility": double,
+                "wind_speed_10m": double
+            }
+        ]
+    }
 """    
 @router.post("/historical")
 async def getCurrentWeather(body: historicalBody):
     isValidLocation = body.location in loc.Locations().getLocations()
     
-    res = {"success": False}
+    res = {
+        "success": False,
+        "historical": []
+        }
     
     if isValidLocation:
         # Parameters for API
@@ -56,17 +75,20 @@ async def getCurrentWeather(body: historicalBody):
    
             # For each day
             for i in range(len(uniqueDates)):
-                res[uniqueDates[i]] = {} # Create dictionary for each day
+                todayAggregate = {
+                    "date": uniqueDates[i]
+                    }
+                res["historical"].append(todayAggregate) # Create dictionary for each day
                 # For each parameter
                 for parameter in parameters:
                     todayData = resApi["hourly"][parameter][i*24:(i*24)+24]
-                    # Do not average weather code
+                    # Do not average weather code; deicde worst weather condition
                     if (parameter == "weather_code"):
-                        res[uniqueDates[i]][parameter] = todayData
+                        todayAggregate[parameter] = determineWorstWeatherCondition(todayData)
                     # Average hourly data
                     else:
                         avg = averageParameter(todayData)
-                        res[uniqueDates[i]][parameter] = avg
+                        todayAggregate[parameter] = avg
             
             res["success"] = True
             
@@ -96,11 +118,26 @@ def getUniqueDates(datetimes):
 Averages a list of weather parameters
 
 Arguments:
-    datetimes: List[int/double]
+   parameters: List[int/double]
     
 Return:
-    dates: double
+    average: double
 """
 def averageParameter(parameters):
-    return sum(parameters)/len(parameters)
+    return round(sum(parameters)/len(parameters), 2)
+
+"""
+Determines the worst weather condition for the day, based on a list of conditions throughout the day.
+Based on WWO Weather Codes.
+Starts at 0 with clear, then 98 with thunderstorms.
+
+Arguments:
+    conditions: List[int]
+    
+Return:
+    worstCondition: str
+"""
+def determineWorstWeatherCondition(conditions):
+    worstWeather = max(conditions) # Get the worst weather condition for today
+    return weather_code[f"{worstWeather}"]
 
