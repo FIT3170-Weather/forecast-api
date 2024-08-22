@@ -16,6 +16,12 @@ db = firestore.client()
 # Sets FastAPI's router
 router = APIRouter()
 
+#TODO: Change default profile data (refer to firestore)
+#      (Daryl) create API for location calling and alerts and email thingy
+#      (Hani) edit API to accept a JSON containing a list of locations (str) 
+#             change the "locations" db thingy
+#             change update_alerts API to change the boolean in the database based on request
+
 
 # Default profile data, edits can be done if wanted to
 default_profile_data = {
@@ -64,24 +70,24 @@ Returns:
     "error":null
 }
 """
-@router.get("/profiles", response_model=Response)
+@router.get("/profiles")
 async def getProfiles():
     try:
         res = []
         docs = db.collection("profiles").stream()
         for doc in docs:
             data_dict = doc.to_dict()
-            profile = ProfileDocument(
-                uid = doc.id,
-                alerts=Alerts(**data_dict.get('alerts', {})),
-                preferences=Preferences(**data_dict.get('preferences', {})),
-                profile_data=ProfileData(**data_dict.get('profile_data', {}))
-            )
-            res.append(profile.model_dump())
+            locations_data = data_dict.get('locations', [])
+            profile = {
+                "uid": doc.id,
+                "locations": locations_data,
+                "profile_data": data_dict.get('profile_data', {})
+            }
+            res.append(profile)
         
-        return Response(status="success", data=res)
+        return {"status": "success", "data": res}
     except Exception as e:
-        return Response(status="error", error=f"An error occurred: {str(e)}")
+        return {"status": "error", "error": e.message}
 
 
 
@@ -117,64 +123,28 @@ Returns:
     "error":null
 }
 """
-@router.post("/profiles/{uid}", response_model=Response)
-async def getProfiles(uid: str):
+@router.post("/profiles/{uid}")
+async def getProfile(uid: str):
     try:
         profile_ref = db.collection("profiles").document(uid)
         profile = profile_ref.get()
+        res = {}
         
         if profile.exists:
             data_dict = profile.to_dict()
-            res = [ProfileDocument(
-                uid=profile.id,
-                alerts=Alerts(**data_dict.get('alerts', {})),
-                preferences=Preferences(**data_dict.get('preferences', {})),
-                profile_data=ProfileData(**data_dict.get('profile_data', {}))
-            )]
+            res = {
+                "uid": profile.id,
+                "locations": data_dict.get('locations', []),
+                "profile_data": data_dict.get('profile_data', {})
+            }
             
-            return Response(status="success", data=res)
+            return {"status": "success", "data": res}
         else:
-            return Response(status="error", error="Profile not found")
+            return {"status": "error", "error":"Profile not found"}
     
     except Exception as e:
-        return Response(status="error", error=f"An error occurred: {str(e)}")
-    
-    
-"""
-Returns a JSON of the alerts for the given UID
+        return {"status": "error", "error": e.message}
 
-Takes:
-    uid: str
-    uid <- I7ze3UyWXqPB1S6HC0fGt6In7Nx1
-
-Returns:
-{
-    "status":"success",
-    "data":{
-        "thunder":true,
-        "rain":true
-    },
-    "error":null
-}
-"""    
-@router.post("/profiles/{uid}/alerts", response_model=AlertsResponse)
-async def getAlerts(uid: str):
-    try:
-        profile_ref = db.collection("profiles").document(uid)
-        profile = profile_ref.get()
-        
-        
-        if profile.exists:
-            data_dict = profile.to_dict()
-            res = Alerts(**data_dict.get('alerts', {}))
-            
-            return AlertsResponse(status="success", data=res)
-        else:
-            return AlertsResponse(status="error", error="Profile not found")
-    
-    except Exception as e:
-        return AlertsResponse(status="error", error=f"An error occurred: {str(e)}")
-    
     
 """
 Returns a JSON of the preferences for the given UID
@@ -186,17 +156,15 @@ Takes:
 Returns:
 {
     "status":"success",
-    "data":{
-        "locations":[
+    "data":[
             "kuala-lumpur",
             "petaling-jaya",
             "subang-jaya"
-        ]
-    },
+    ]
     "error":null
 }
 """    
-@router.post("/profiles/{uid}/preferences", response_model=PreferencesResponse)
+@router.post("/profiles/{uid}/get_locations")
 async def getPreferences(uid: str):
     try:
         profile_ref = db.collection("profiles").document(uid)
@@ -204,14 +172,14 @@ async def getPreferences(uid: str):
         
         if profile.exists:
             data_dict = profile.to_dict()
-            res = Preferences(**data_dict.get('preferences', {}))
+            res = data_dict.get('locations')
             
-            return PreferencesResponse(status="success", data=res)
+            return {"status":"success", "data": res}
         else:
-            return PreferencesResponse(status="error", error="Profile not found")
+            return {"status": "error", "error": "Profile not found"}
     
     except Exception as e:
-        return PreferencesResponse(status="error", error=f"An error occurred: {str(e)}")
+        return {"status": "error", "error": e.message}
 
 
 @router.post("/profiles/{uid}/preferences/forecast")
@@ -219,22 +187,54 @@ async def getPreferencesForecast(uid: str):
     try:
         response = await getPreferences(uid)
         res = {}
-        locations = response.data.locations
-        for loc in locations:
+        for loc in response.get('data'):
             
             res[loc] = await getCurrentWeather(currentBody(location=loc))
         return {"success": True, "data": res}
 
     except Exception as e:
-        return {"success": False}
+        return {"success": False, "error": e.message}
     
+"""
+Returns a JSON of all subscribed emails
 
-@router.post("/profiles/{uid}/get_email")
-async def get_email(uid: str):
+Return:
+{
+    "status":"success",
+    "data":[
+        [
+            "email": email,
+            [
+                "kuala-lumpur",
+                "petaling-jaya",
+                "subang-jaya"
+            ]
+        ],
+                [
+            "email": second- email,
+            [
+                "kuala-lumpur",
+            ]
+        ]
+    ]
+    "error":null
+}
+"""    
+@router.get("/profiles/subscriptions")
+async def get_subscriptions():
     try:
-        profile = await getProfiles(uid)
-        prof_data = profile.data[0].profile_data
-        return {"success": True, "data": prof_data.email}
+        emails = []
+        data = await getProfiles()
+        profiles = data.get('data')
+
+        for prof in profiles:
+            profile = prof.get('profile_data')
+            loc = prof.get('locations')
+            print(prof)
+            if profile.get('alerts'):
+                emails.append([profile.get('email'), loc])
+
+        return {"success": True, "data": emails}
         
     except Exception as e:
         return {"success": False, "error": str(e)}
