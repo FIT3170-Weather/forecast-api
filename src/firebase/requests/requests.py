@@ -279,9 +279,9 @@ async def update_profile_data(user_id: str, profile_data_update: ProfileDataUpda
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-#API to add preferrence location
-@router.put("/add_location/{user_id}")
-async def add_location(user_id: str, location_update: LocationUpdate):
+#API to update locations
+@router.put("/update_location/{user_id}")
+async def update_location(user_id: str, locations_update: LocationsUpdate):
     try:
         profiles_ref = db.collection("profiles").document(user_id)
 
@@ -289,36 +289,31 @@ async def add_location(user_id: str, location_update: LocationUpdate):
         if not profiles_ref.get().exists:
             raise HTTPException(status_code=404, detail="Profile not found")
 
-        # Add the new location to the locations list
-        profiles_ref.update({
-            "preferences.locations": firebase_admin.firestore.ArrayUnion([location_update.location])
-        })
+        # Overwrite the locations array with the new one
+        profiles_ref.update({"locations": locations_update.locations})
 
-        return {"user_id": user_id, "message": "Location added successfully"}
+        return {"user_id": user_id, "message": "Locations updated successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-#API to update or create alerts
+#API to update alerts
 @router.put("/update_alert/{user_id}")
 async def update_alert(user_id: str, alert_update: AlertUpdate):
     try:
         profiles_ref = db.collection("profiles").document(user_id)
 
         # Check if the document exists
-        if not profiles_ref.get().exists:
+        doc = profiles_ref.get()
+        if not doc.exists:
             raise HTTPException(status_code=404, detail="Profile not found")
 
-        # Retrieve the current alerts
-        current_data = profiles_ref.get().to_dict()
-        alerts = current_data.get("alerts", {})
+        # Update the alerts field in profile_data with the provided value
+        profiles_ref.update({"profile_data.alerts": alert_update.alerts})
 
-        # Update the alert (whether it exists or is new)
-        alerts[alert_update.alert_type] = alert_update.state
-
-        # Apply the update to Firestore
-        profiles_ref.update({"alerts": alerts})
-
-        return {"user_id": user_id, "message": f"{alert_update.alert_type} alert set to {alert_update.state}"}
+        return {
+            "user_id": user_id,
+            "message": f"Alert state updated to {alert_update.alerts}"
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
