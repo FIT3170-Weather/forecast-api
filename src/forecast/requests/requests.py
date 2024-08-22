@@ -182,7 +182,7 @@ def getRemainingHours():
    
 """
 Get the houlry and daily forecast of a location in one api call. Return of api call is fixed.
-
+Time in ISO8601 format.
 Arguments:
     {
         "location": str
@@ -193,22 +193,27 @@ Returns:
         "success": bool,
         "hourly": {
             "time": list[str],
-            "temperature": list[float],
-            "humidity": list[float],
-            "pressure": list[float],
+            "temperature": list[int],
+            "real_feel": list[int],
+            "humidity": list[int],
             "precipitation": list[float],
-            "wind_speed": list[float],
-            "wind_direction": list[float]
+            "pressure": list[int],
+            "wind_speed": list[int],
+            "wind_direction": list[str],
+            dew_point: list[int],
         },
 
         "daily": {
             "time": list[str],
-            "temperature": list[float],
+            "max_temperature": list[int],
+            "min_temperature": list[int],
+            "real_feel": list[int],
             "humidity": list[float],
-            "pressure": list[float],
             "precipitation": list[float],
+            "pressure": list[float],
             "wind_speed": list[float],
-            "wind_direction": list[float]
+            "wind_direction": list[float],
+            dew_point: list[int],
         }
     } 
 """    

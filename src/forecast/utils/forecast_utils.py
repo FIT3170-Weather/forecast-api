@@ -171,11 +171,11 @@ def prepareForecastJSON(forecast_dataframe, total_hours_to_forecast, day_hours_t
         "min_temperature": day_min(temperature[day_hours_to_predict:], DAYS_TO_FORECAST),
         "real_feel": real_feel_daily,
         "humidity": day_average(humidity[day_hours_to_predict:], DAYS_TO_FORECAST),
-        "dew_point": day_average(dew_point[day_hours_to_predict:], DAYS_TO_FORECAST),
         "precipitation": day_sum(precipitation[day_hours_to_predict:], DAYS_TO_FORECAST),
         "pressure": day_average(pressure[day_hours_to_predict:], DAYS_TO_FORECAST),
         "wind_speed": day_average(wind_speed[day_hours_to_predict:], DAYS_TO_FORECAST),
-        "wind_direction": [degrees_to_direction(i) for i in day_average(wind_direction[day_hours_to_predict:], DAYS_TO_FORECAST)]
+        "wind_direction": [degrees_to_direction(i) for i in day_average(wind_direction[day_hours_to_predict:], DAYS_TO_FORECAST)],
+        "dew_point": day_average(dew_point[day_hours_to_predict:], DAYS_TO_FORECAST)
     }
     
     return result_dict
