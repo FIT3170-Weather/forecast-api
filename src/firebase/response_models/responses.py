@@ -1,11 +1,11 @@
-from typing import List, Union
-from pydantic import BaseModel
+from typing import List, Union, Optional
+from pydantic import BaseModel, Field
 
 
 class ProfileDataUpdate(BaseModel):
-    email: str = None
-    password: str = None
-    username: str = None
+    email: Optional[str] = None
+    home_location: Optional[str] = Field(None, alias="home-location")
+    username: Optional[str] = None
 
 
 class LocationsUpdate(BaseModel):

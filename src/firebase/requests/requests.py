@@ -25,18 +25,13 @@ router = APIRouter()
 
 # Default profile data, edits can be done if wanted to
 default_profile_data = {
-    "alerts": {
-        "rain": True,
-        "wind": True,
-        "thunderstorms": True,
-        "temparature": True,
-    },
-    "preferences": {
-        "locations": ["kuala-lumpur", "petaling-jaya", "subang-jaya"],
-    },
+
+    "locations": ["kuala-lumpur", "petaling-jaya", "subang-jaya"],
+
     "profile_data": {
+        "alerts": False,
         "email": "",
-        "password": "",
+        "home-location": "",
         "username": "",
     },
 }
@@ -266,15 +261,20 @@ async def update_profile_data(user_id: str, profile_data_update: ProfileDataUpda
         profiles_ref = db.collection("profiles").document(user_id)
 
         # Check if the document exists
-        if not profiles_ref.get().exists:
+        doc = profiles_ref.get()
+        if not doc.exists:
             raise HTTPException(status_code=404, detail="Profile not found")
 
-        # Prepare the updated data
+        # Retrieve the current profile_data
+        current_data = doc.to_dict().get("profile_data", {})
+
+        # Prepare the updated data, merging with the existing data
         update_data = {k: v for k, v in profile_data_update.dict().items() if v is not None}
+        updated_profile_data = {**current_data, **update_data}
 
         # Update the profile_data field
-        profiles_ref.update({"profile_data": update_data})
-        
+        profiles_ref.update({"profile_data": updated_profile_data})
+
         return {"user_id": user_id, "message": "Profile data updated successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
