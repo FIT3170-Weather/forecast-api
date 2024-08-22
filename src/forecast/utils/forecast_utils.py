@@ -1,3 +1,4 @@
+import os
 import openmeteo_requests
 
 import requests_cache
@@ -73,28 +74,65 @@ def populateFromResponse(response):
 
 
 def makeForecast(dataframe, location_code, hours_to_forecast):
-    # convert dataframe to numpy arrayn
+    # convert dataframe to numpy array
     input = dataframe.to_numpy()
 
     # Use valid location to load saved forecast model according 
-    model_location = f'../../models/{location_code}/model.h5'   # Load the model from an HDF5 file
+    model_location = f'../weather-forecasting/models/{location_code}/model.h5'   # Load the model from an HDF5 file
     model = load_model(model_location)
 
     # Load feature scalier object according to location 
-    scaler_location = f'../../../weather-forecasting/models/{location_code}/scaler.pkl'
+    scaler_location = f'../weather-forecasting/models/{location_code}/scaler.pkl'
     scaler = joblib.load(scaler_location)
 
+    # Scale the input values for prediction
+    scaled_input = scaler.transform(input)
+    
     # Must predict hours_to_forecast hours into the future by performing auto-regression
-    forecast = []
+    forecast = np.empty((0, 7))
+
     for i in range(hours_to_forecast):
-        # Scale the input
-        input_scaled = scaler.transform(input)
+        scaled_input = scaled_input.reshape(1, 72, 7)
 
         # Perform prediction
-        prediction = model.predict(input_scaled)
-        forecast.append(scaler.inverse_transform(prediction))
+        prediction = model.predict(scaled_input)
+        forecast = np.vstack([forecast, prediction])
+
+        scaled_input = scaled_input.reshape(72, 7)
 
         # Update dataframe with new prediction
-        dataframe = np.append(dataframe, prediction)
-        dataframe = np.delete(dataframe, 0)
+        scaled_input = np.vstack([scaled_input, prediction])
+        scaled_input = scaled_input[1:, :] # Remove the first row
+
+    # Inverse transform the forecasted values
+    forecast = scaler.inverse_transform(forecast)
+    
+    return forecast
+
+
+def prepareForecastJSON(forecast_dataframe, total_hours_to_forecast, day_hours_to_predict, result_dict):
+    
+    # Stich the forecast results as a JSON response
+    result_dict["hourly"] = {
+        "time": [],
+        "temperature": [],
+        "pressure": [],
+        "humidity": [],
+        "precipitation": [],
+        "wind_speed": [],
+        "wind_direction": [],
+        "cloud_cover": [],
+    }
+
+    result_dict["daily"] = {
+        "time": [],
+        "temperature": [],
+        "pressure": [],
+        "humidity": [],
+        "precipitation": [],
+        "wind_speed": [],
+        "wind_direction": [],
+        "cloud_cover": [],
+    }
+    
     pass
