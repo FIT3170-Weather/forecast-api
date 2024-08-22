@@ -4,6 +4,7 @@ import src.forecast.bodyParameters.locations as loc
 from .current.requests import requests as current
 from .forecast.requests import requests as forecast
 from fastapi.middleware.cors import CORSMiddleware
+from .firebase.requests import requests as firebase
 
 app = FastAPI() # DO NOT RUN FROM HERE; run /main.py instead
 
@@ -17,3 +18,4 @@ app.add_middleware(
 
 app.include_router(current.router)
 app.include_router(forecast.router)
+app.include_router(firebase.router)
