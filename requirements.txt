@@ -1,0 +1,19 @@
+# Tested with python 3.10.14
+
+# TensorFlow version
+tensorflow==2.10.0
+keras==2.10.0
+scikit-learn==1.5.1
+joblib==1.4.2
+
+numpy==1.26.4
+seaborn==0.13.2
+pandas==2.2.2
+matplotlib==3.9.2
+
+requests-cache==1.2.1
+openmeteo-requests
+retry-requests
+
+fastapi==0.112.1
+uvicorn==0.30.6
