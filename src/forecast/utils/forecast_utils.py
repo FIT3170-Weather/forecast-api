@@ -1,11 +1,12 @@
-import os
+from datetime import datetime, timedelta
 import openmeteo_requests
 
+import pytz
 import requests_cache
 from retry_requests import retry
 import pandas as pd
 import src.forecast.bodyParameters.locations as loc
-from src.forecast.utils.constants import PREDICTED_ATTRIBUTES
+from src.forecast.utils.constants import DAILY_HOURS, DAYS_TO_FORECAST, PRECIPITATION_DP, PREDICTED_ATTRIBUTES, TIMEZONE
 import numpy as np
 
 
@@ -142,43 +143,66 @@ def prepareForecastJSON(forecast_dataframe, total_hours_to_forecast, day_hours_t
     temperature = [round(temperature[i]) for i in range(len(temperature))]
     humidity = [round(humidity[i]) for i in range(len(humidity))]
     dew_point = [round(i) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[2]].values.tolist()]
-    precipitation = [round(i, 1) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[3]].values.tolist()]
+    precipitation = [round(max(i, 0), PRECIPITATION_DP) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[3]].values.tolist()]
     pressure = [round(i) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[4]].values.tolist()]
     wind_speed = [round(i) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[5]].values.tolist()]
-    wind_direction = [degrees_to_direction(i) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[6]].values.tolist()]
+    wind_direction = forecast_dataframe[PREDICTED_ATTRIBUTES[6]].values.tolist()
     
-    #TODO: Prepare the time in ISO8601 format for hourly
+    wind_direction_labels = [degrees_to_direction(i) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[6]].values.tolist()]
 
     # Stich the forecast results as a JSON response
     result_dict["hourly"] = {
-        "time": [],
+        "time": generate_last_n_hours(day_hours_to_predict),
         "temperature": temperature[:day_hours_to_predict],
         "real_feel": real_feel[:day_hours_to_predict],
         "humidity": humidity[:day_hours_to_predict],
         "precipitation": precipitation[:day_hours_to_predict],
         "pressure": pressure[:day_hours_to_predict],
         "wind_speed": wind_speed[:day_hours_to_predict],
-        "wind_direction": wind_direction[:day_hours_to_predict],
+        "wind_direction": wind_direction_labels[:day_hours_to_predict],
         "dew_point": dew_point[:day_hours_to_predict]
     }
 
-    #TODO: Prepare the time in ISO8601 format for hourly
+    real_feel_daily = [round(heat_index(day_average(temperature[day_hours_to_predict:], DAYS_TO_FORECAST)[i], day_average(humidity[day_hours_to_predict:], DAYS_TO_FORECAST)[i])) for i in range(DAYS_TO_FORECAST)]
 
     result_dict["daily"] = {
-        "time": [],
-        "max_temperature": temperature[:day_hours_to_predict],
-        "min_temperature": temperature[:day_hours_to_predict],
-        ""
-        "humidity": humidity[:day_hours_to_predict],
-        "dew_point": dew_point[:day_hours_to_predict],
-        "precipitation": precipitation[:day_hours_to_predict],
-        "pressure": pressure[:day_hours_to_predict],
-        "wind_speed": pressure[:day_hours_to_predict],
-        "wind_direction": pressure[:day_hours_to_predict],
+        "time": generate_next_n_days(DAYS_TO_FORECAST),
+        "max_temperature": day_max(temperature[day_hours_to_predict:], DAYS_TO_FORECAST),
+        "min_temperature": day_min(temperature[day_hours_to_predict:], DAYS_TO_FORECAST),
+        "real_feel": real_feel_daily,
+        "humidity": day_average(humidity[day_hours_to_predict:], DAYS_TO_FORECAST),
+        "dew_point": day_average(dew_point[day_hours_to_predict:], DAYS_TO_FORECAST),
+        "precipitation": day_sum(precipitation[day_hours_to_predict:], DAYS_TO_FORECAST),
+        "pressure": day_average(pressure[day_hours_to_predict:], DAYS_TO_FORECAST),
+        "wind_speed": day_average(wind_speed[day_hours_to_predict:], DAYS_TO_FORECAST),
+        "wind_direction": [degrees_to_direction(i) for i in day_average(wind_direction[day_hours_to_predict:], DAYS_TO_FORECAST)]
     }
     
     return result_dict
 
+def day_average(data, n):
+    """
+    Calculate the average of each day (24 hours) in a list of 7 day hourly data.
+    """
+    return [round(np.mean(data[i*DAILY_HOURS:(i+1)*DAILY_HOURS])) for i in range(n)]
+
+def day_min(data, n):
+    """
+    Calculate the minimum of each day (24 hours) in a list of 7 day hourly data.
+    """
+    return [round(np.min(data[i*DAILY_HOURS:(i+1)*DAILY_HOURS])) for i in range(n)]
+
+def day_max(data, n):
+    """
+    Calculate the maximum value of each day (24 hours) in a list of 7 day hourly data.
+    """
+    return [round(np.max(data[i*DAILY_HOURS:(i+1)*DAILY_HOURS])) for i in range(n)]
+
+def day_sum(data, n):
+    """
+    Calculate the sum of each day (24 hours) in a list of 7 day hourly data.
+    """
+    return [round(np.sum(data[i*DAILY_HOURS:(i+1)*DAILY_HOURS]), PRECIPITATION_DP) for i in range(n)]
 
 def heat_index(temperature, humidity):
     """
@@ -258,3 +282,62 @@ def degrees_to_direction(degrees):
         return 'NW'
     elif 315 <= degrees < 337.5:
         return 'NNW'
+    
+def generate_last_n_hours(n, timezone_str=TIMEZONE):
+    """
+    Generate the last `n` hours before the end of the day in the format 'YYYY-MM-DDTHH:00'.
+
+    :param n: Number of last hours to include
+    :param timezone_str: Timezone string (e.g., 'Asia/Kuala_Lumpur')
+    :return: List of formatted hour strings
+    """
+    # Create a timezone-aware datetime object for the end of the day
+    tz = pytz.timezone(timezone_str)
+    now = datetime.now(tz)
+    
+    # Get the current date
+    current_date = now.date()
+    
+    # Determine the end of the day
+    end_of_day = tz.localize(datetime.combine(current_date, datetime.max.time()).replace(microsecond=0))
+    
+    # Initialize a list to hold the formatted hours
+    hours_list = []
+
+    # Generate the last `n` hours before the end of the day
+    for i in range(n):
+        hour = end_of_day - timedelta(hours=i)
+        formatted_hour = hour.strftime("%Y-%m-%dT%H:00")
+        hours_list.append(formatted_hour)
+
+    # Sort the list to have the correct order
+    hours_list.sort()
+
+    return hours_list
+
+def generate_next_n_days(n, timezone_str=TIMEZONE):
+    """
+    Generate the next `n` days of dates in the format 'YYYY-MM-DD', starting from the day after today.
+
+    :param n: Number of days to generate
+    :param timezone_str: Timezone string (e.g., 'Asia/Kuala_Lumpur')
+    :return: List of formatted date strings
+    """
+    # Create a timezone-aware datetime object for the current date
+    tz = pytz.timezone(timezone_str)
+    now = datetime.now(tz)
+
+    # Get the current date and calculate the date for the next day
+    current_date = now.date()
+    next_day = current_date + timedelta(days=1)
+    
+    # Initialize a list to hold the formatted dates
+    dates_list = []
+
+    # Generate the next `n` days starting from the day after today
+    for i in range(n):
+        future_day = next_day + timedelta(days=i)
+        formatted_date = future_day.strftime("%Y-%m-%d")
+        dates_list.append(formatted_date)
+
+    return dates_list

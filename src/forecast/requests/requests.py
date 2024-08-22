@@ -242,9 +242,7 @@ async def getWeatherForecast(location_code: str):
 
     # Make the forecast
     forecast_results = makeForecast(hourly_dataframe, location_code, total_hours_to_forecast)
-    print(forecast_results.shape)
     forecast_results_df = pd.DataFrame(data = forecast_results, columns = PREDICTED_ATTRIBUTES)
-    print(forecast_results_df.head())
 
     res = prepareForecastJSON(forecast_results_df, total_hours_to_forecast, day_hours_to_predict, res)
 
