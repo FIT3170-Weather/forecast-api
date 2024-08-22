@@ -1,13 +1,14 @@
 from fastapi import APIRouter
+import pandas as pd
 from pydantic import BaseModel
 
-from src.forecast.utils.forecast_utils import getPreviousHourlyData
+from src.forecast.utils.forecast_utils import getPreviousHourlyData, makeForecast, prepareForecastJSON, PREDICTED_ATTRIBUTES
 import datetime as dt
-from forecast.utils.forecast_utils import getPreviousHourlyData
 
 import src.forecast.bodyParameters.locations as loc
 import src.forecast.bodyParameters.forecast_type as type
 import src.forecast.bodyParameters.variables as var
+from src.forecast.utils.constants import FORECAST_PREV_DAYS, DAYS_TO_FORECAST, TIMEZONE
 
 from datetime import datetime
 import pytz
@@ -37,12 +38,6 @@ mock_res_daily = {
     "cloud": ["25", "29", "16", "25", "29", "16", "25"],
     "condition": ["Sunny", "Sunny", "Cloudy", "Sunny", "Sunny", "Cloudy", "Sunny"],
 }
-
-FORECAST_PREV_DAYS = 3 # Past 3 days for inference
-FORECAST_CURRENT_DAYS = 1 # This means the current day also used in inference
-DAYS_TO_FORECAST = 7
-PREDICTED_ATTRIBUTES = ['temperature_2m', 'relative_humidity_2m', 'dew_point_2m', 'rain', 'pressure_msl', 'wind_speed_10m', 'wind_direction_10m']
-TIMEZONE = 'Asia/Singapore'
 
 
 """
@@ -199,23 +194,21 @@ Returns:
         "hourly": {
             "time": list[str],
             "temperature": list[float],
-            "pressure": list[float],
             "humidity": list[float],
+            "pressure": list[float],
             "precipitation": list[float],
             "wind_speed": list[float],
-            "wind_direction": list[float],
-            "cloud_cover": list[float],
+            "wind_direction": list[float]
         },
 
         "daily": {
             "time": list[str],
             "temperature": list[float],
-            "pressure": list[float],
             "humidity": list[float],
+            "pressure": list[float],
             "precipitation": list[float],
             "wind_speed": list[float],
-            "wind_direction": list[float],
-            "cloud_cover": list[float],
+            "wind_direction": list[float]
         }
     } 
 """    
@@ -248,10 +241,13 @@ async def getWeatherForecast(location_code: str):
         return res
 
     # Make the forecast
+    forecast_results = makeForecast(hourly_dataframe, location_code, total_hours_to_forecast)
+    print(forecast_results.shape)
+    forecast_results_df = pd.DataFrame(data = forecast_results, columns = PREDICTED_ATTRIBUTES)
+    print(forecast_results_df.head())
 
-    # Stich the forecast results as a JSON response
+    res = prepareForecastJSON(forecast_results_df, total_hours_to_forecast, day_hours_to_predict, res)
 
-    # Return requested variables
-    # for v in body.variables:
-    #     res[v] = mock_res[v]
     res["success"] = True
+
+    return res

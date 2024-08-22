@@ -5,6 +5,7 @@ import requests_cache
 from retry_requests import retry
 import pandas as pd
 import src.forecast.bodyParameters.locations as loc
+from src.forecast.utils.constants import PREDICTED_ATTRIBUTES
 import numpy as np
 
 
@@ -12,8 +13,6 @@ import numpy as np
 from keras.models import load_model
 import joblib
 
-
-PREDICTED_ATTRIBUTES = ['temperature_2m', 'relative_humidity_2m', 'dew_point_2m', 'rain', 'pressure_msl', 'wind_speed_10m', 'wind_direction_10m']
 
 
 # Function to get the previous houly data
@@ -139,16 +138,16 @@ def prepareForecastJSON(forecast_dataframe, total_hours_to_forecast, day_hours_t
     humidity = forecast_dataframe[PREDICTED_ATTRIBUTES[1]].values.tolist()
 
     real_feel = [round(heat_index(temperature[i], humidity[i])) for i in range(total_hours_to_forecast)]
+
     temperature = [round(temperature[i]) for i in range(len(temperature))]
     humidity = [round(humidity[i]) for i in range(len(humidity))]
-
-
     dew_point = [round(i) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[2]].values.tolist()]
     precipitation = [round(i, 1) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[3]].values.tolist()]
     pressure = [round(i) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[4]].values.tolist()]
     wind_speed = [round(i) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[5]].values.tolist()]
-    wind_direction = [round(i) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[6]].values.tolist()]
+    wind_direction = [degrees_to_direction(i) for i in forecast_dataframe[PREDICTED_ATTRIBUTES[6]].values.tolist()]
     
+    #TODO: Prepare the time in ISO8601 format for hourly
 
     # Stich the forecast results as a JSON response
     result_dict["hourly"] = {
@@ -163,9 +162,13 @@ def prepareForecastJSON(forecast_dataframe, total_hours_to_forecast, day_hours_t
         "dew_point": dew_point[:day_hours_to_predict]
     }
 
+    #TODO: Prepare the time in ISO8601 format for hourly
+
     result_dict["daily"] = {
         "time": [],
-        "temperature": temperature[:day_hours_to_predict],
+        "max_temperature": temperature[:day_hours_to_predict],
+        "min_temperature": temperature[:day_hours_to_predict],
+        ""
         "humidity": humidity[:day_hours_to_predict],
         "dew_point": dew_point[:day_hours_to_predict],
         "precipitation": precipitation[:day_hours_to_predict],
