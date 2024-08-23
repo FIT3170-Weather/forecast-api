@@ -31,7 +31,7 @@ default_profile_data = {
     "profile_data": {
         "alerts": False,
         "email": "",
-        "home-location": "",
+        "home_location": "",
         "username": "",
     },
 }
