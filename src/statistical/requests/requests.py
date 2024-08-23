@@ -5,6 +5,22 @@ from src.statistical.utils.statistical_utils import getLastYearWeatherData
 
 router = APIRouter()
 
+"""
+Gets the Monthly statistical data for precipitation and temperature. Size of information is 12 months. 
+First item in list is January and last item is December.
+
+Arguments:
+    Query_param:
+        location_code: string (as defined in locations.py or GET /locations endpoint)
+    
+Return:
+    {
+        "success": bool
+        "temperature": [int],
+        "total_precipitation": [int],
+        "precipitation_days": [int]
+    }
+"""    
 @router.get("/monthly")
 async def getMonthlyWeatherStatisics(location_code: str):
     isValidLocation = location_code in loc.Locations().getLocations()
@@ -28,6 +44,7 @@ async def getMonthlyWeatherStatisics(location_code: str):
         "precipitation_days": "sum"
     })
 
+    res["months"] = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     res["temperature"] = monthly_df["temperature_2m_mean"].round().astype(int).tolist()
     res["total_precipitation"] = monthly_df["precipitation_sum"].round().astype(int).tolist()
     res["precipitation_days"] = monthly_df["precipitation_days"].tolist()
