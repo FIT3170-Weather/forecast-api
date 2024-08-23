@@ -3,6 +3,7 @@ import openmeteo_requests
 import requests_cache
 import src.forecast.bodyParameters.locations as loc
 from datetime import datetime
+import pandas as pd
 
 def getLastYearWeatherData(location_code, days=3):
     # Setup the Open-Meteo API client with cache and retry on error
@@ -34,8 +35,28 @@ def getLastYearWeatherData(location_code, days=3):
 
     try:
         responses = openmeteo.weather_api(url, params=params)
-        response = populateFromResponse(responses[0])
+        response = populateYearResponse(responses[0])
     except:
         return
     
     return response
+
+def populateYearResponse(response):
+    # Process daily data. The order of variables needs to be the same as requested.
+    daily = response.Daily()
+    daily_temperature_2m_mean = daily.Variables(0).ValuesAsNumpy()
+    daily_precipitation_sum = daily.Variables(1).ValuesAsNumpy()
+
+    daily_data = {"date": pd.date_range(
+        start = pd.to_datetime(daily.Time(), unit = "s", utc = True),
+        end = pd.to_datetime(daily.TimeEnd(), unit = "s", utc = True),
+        freq = pd.Timedelta(seconds = daily.Interval()),
+        inclusive = "left"
+    )}
+    daily_data["temperature_2m_mean"] = daily_temperature_2m_mean
+    daily_data["precipitation_sum"] = daily_precipitation_sum
+
+    year_df = pd.DataFrame(daily_data)
+    year_df.set_index("date", inplace = True)
+
+    return year_df
