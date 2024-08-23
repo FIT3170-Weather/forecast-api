@@ -9,7 +9,12 @@ class Variables:
         self.variables = [
             "temperature",
             "precipitation",
-            "humidity"
+            "humidity",
+            "wind",
+            "pressure",
+            "visibility",
+            "cloud",
+            "condition"
             ]
         
     def getVariables(self):
