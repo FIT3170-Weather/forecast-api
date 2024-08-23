@@ -5,7 +5,7 @@ import src.forecast.bodyParameters.locations as loc
 from datetime import datetime
 import pandas as pd
 
-def getLastYearWeatherData(location_code, days=3):
+def getLastYearWeatherData(location_code):
     # Setup the Open-Meteo API client with cache and retry on error
     cache_session = requests_cache.CachedSession('.cache', expire_after = -1)
     retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
@@ -24,12 +24,12 @@ def getLastYearWeatherData(location_code, days=3):
     last_day_of_previous_year = datetime(today.year - 1, 12, 31)
 
     # Get the past 3 days of hourly weather data
-    url = "https://api.open-meteo.com/v1/forecast"
+    url = "https://archive-api.open-meteo.com/v1/archive"
     params = {
         "latitude": location["lat"],
         "longitude": location["lon"],
-        "start_date": first_day_of_previous_year,
-        "end_date": last_day_of_previous_year,
+        "start_date": first_day_of_previous_year.strftime('%Y-%m-%d'),
+        "end_date": last_day_of_previous_year.strftime('%Y-%m-%d'),
         "daily": ["temperature_2m_mean", "precipitation_sum"]
     }
 

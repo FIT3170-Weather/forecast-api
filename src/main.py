@@ -6,6 +6,7 @@ from .current.requests import requests as current
 from .forecast.requests import requests as forecast
 from fastapi.middleware.cors import CORSMiddleware
 from .firebase.requests import requests as firebase
+from .statistical.requests import requests as statistical
 
 app = FastAPI() # DO NOT RUN FROM HERE; run /main.py instead
 
@@ -21,3 +22,4 @@ app.include_router(historical.router)
 app.include_router(current.router)
 app.include_router(forecast.router)
 app.include_router(firebase.router)
+app.include_router(statistical.router)
