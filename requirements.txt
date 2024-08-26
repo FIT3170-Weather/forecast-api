@@ -1,4 +1,4 @@
-# Tested with python 3.10.14
+# Tested with python 3.10.8 - 3.10.14
 
 # TensorFlow version
 tensorflow==2.10.0
@@ -15,5 +15,12 @@ requests-cache==1.2.1
 openmeteo-requests
 retry-requests
 
+# Firebase dependencies
+firebase-admin==6.5.0
+google-cloud-firestore==2.17.2
+google-cloud-core==2.4.1
+
+# Server dependencies
 fastapi==0.112.1
 uvicorn==0.30.6
+protobuf==3.20.3
