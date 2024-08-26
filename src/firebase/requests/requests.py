@@ -69,7 +69,7 @@ Returns:
 async def getProfiles():
     try:
         res = []
-        docs = db.collection("profiles").stream()
+        docs = db.collection("test_profiles").stream()
         for doc in docs:
             data_dict = doc.to_dict()
             locations_data = data_dict.get('locations', [])
