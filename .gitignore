@@ -1,4 +1,4 @@
 __pycache__/
 .venv
-ServiceAccountKey.json
+serviceAccountKey.json
 .cache.sqlite
