@@ -256,6 +256,34 @@ async def get_subscriptions():
 #API to create user
 @router.post("/create_profile/{user_id}")
 async def create_profile(user_id: str):
+    """
+    Creates a new user profile in the Firestore database using a unique user ID (UID).
+
+    If the profile already exists, the API will return an error. If not, it initializes the profile 
+    with default values and stores it in the `profiles` collection.
+
+    Path Parameters:
+    - user_id: str
+        The unique identifier for the user. This UID is used to create a new document in the `profiles` collection.
+
+    Return:
+    - JSON response with the status of the profile creation.
+    
+    Example Response:
+    {
+        "user_id": "string",
+        "message": "Profile created successfully with default values"
+    }
+
+    Error Responses:
+    - 400 Bad Request: If the profile already exists.
+    - 500 Internal Server Error: If there is an unexpected server error.
+    
+    Example Error Response (Profile already exists):
+    {
+        "detail": "Profile already exists"
+    }
+    """
     try:
         # Yeah man this is how we get the collection "profiles"
         profiles_ref = db.collection("profiles")
@@ -275,6 +303,39 @@ async def create_profile(user_id: str):
 #API to update user details
 @router.put("/update_profile_data/{user_id}")
 async def update_profile_data(user_id: str, profile_data_update: ProfileDataUpdate):
+    """
+    Updates specific fields within the profile_data map for a user profile.
+
+    The API fetches the current profile data, merges it with the new data provided in the request body, 
+    and updates the profile_data field in the Firestore database.
+
+    Path Parameters:
+    - user_id: str
+        The unique identifier for the user. This UID is used to locate the document in the `profiles` collection.
+
+    Request Body:
+    - profile_data_update: ProfileDataUpdate
+        A JSON object containing the fields to be updated within the profile_data map.
+        Only non-null fields will be updated, leaving others unchanged.
+
+    Return:
+    - JSON response with the status of the profile data update.
+
+    Example Response:
+    {
+        "user_id": "string",
+        "message": "Profile data updated successfully"
+    }
+
+    Error Responses:
+    - 404 Not Found: If the profile does not exist.
+    - 500 Internal Server Error: If there is an unexpected server error.
+
+    Example Error Response (Profile not found):
+    {
+        "detail": "Profile not found"
+    }
+    """
     try:
         profiles_ref = db.collection("profiles").document(user_id)
 
@@ -300,6 +361,38 @@ async def update_profile_data(user_id: str, profile_data_update: ProfileDataUpda
 #API to update locations
 @router.put("/update_location/{user_id}")
 async def update_location(user_id: str, locations_update: LocationsUpdate):
+    """
+    Overwrites the locations array for a user's profile in the Firestore database.
+
+    The API takes a new array of locations from the request body and replaces the existing 
+    locations array for the specified user.
+
+    Path Parameters:
+    - user_id: str
+        The unique identifier for the user. This UID is used to locate the document in the `profiles` collection.
+
+    Request Body:
+    - locations_update: LocationsUpdate
+        A JSON object containing the new array of locations to replace the existing array.
+
+    Return:
+    - JSON response with the status of the locations update.
+
+    Example Response:
+    {
+        "user_id": "string",
+        "message": "Locations updated successfully"
+    }
+
+    Error Responses:
+    - 404 Not Found: If the profile does not exist.
+    - 500 Internal Server Error: If there is an unexpected server error.
+
+    Example Error Response (Profile not found):
+    {
+        "detail": "Profile not found"
+    }
+    """
     try:
         profiles_ref = db.collection("profiles").document(user_id)
 
@@ -317,6 +410,38 @@ async def update_location(user_id: str, locations_update: LocationsUpdate):
 #API to update alerts
 @router.put("/update_alert/{user_id}")
 async def update_alert(user_id: str, alert_update: AlertUpdate):
+    """
+    Updates the alert state in the profile_data map for a user profile.
+
+    The API modifies the `alerts` field within the `profile_data` map of a user's profile 
+    document in the Firestore database based on the value provided in the request body.
+
+    Path Parameters:
+    - user_id: str
+        The unique identifier for the user. This UID is used to locate the document in the `profiles` collection.
+
+    Request Body:
+    - alert_update: AlertUpdate
+        A JSON object containing the new alert state to be set.
+
+    Return:
+    - JSON response with the status of the alert update, indicating whether it was successful.
+
+    Example Response:
+    {
+        "user_id": "string",
+        "message": "Alert state updated to true/false"
+    }
+
+    Error Responses:
+    - 404 Not Found: If the profile does not exist.
+    - 500 Internal Server Error: If there is an unexpected server error.
+
+    Example Error Response (Profile not found):
+    {
+        "detail": "Profile not found"
+    }
+    """
     try:
         profiles_ref = db.collection("profiles").document(user_id)
 
@@ -334,4 +459,3 @@ async def update_alert(user_id: str, alert_update: AlertUpdate):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
