@@ -37,36 +37,40 @@ default_profile_data = {
 }
 
 
-"""
-Returns a JSON of every profile there is in the database
 
-Returns:
-{
-    "status":"success",
-    "data":[{
-        "uid":"I7ze3UyWXqPB1S6HC0fGt6In7Nx1",
-        "alerts":{
-            "thunder":true,
-            "rain":true
-        },
-        "preferences":{
-            "locations":[
-                "kuala-lumpur",
-                "petaling-jaya",
-                "subang-jaya"
-            ]
-        },
-        "profile_data":{
-            "email":"",
-            "password":"",
-            "username":""
-        }
-    }],
-    "error":null
-}
-"""
 @router.get("/profiles")
 async def getProfiles():
+    """
+    Returns a JSON of every profile there is in the database
+
+    Arguments: 
+        None
+
+    Returns:
+    {
+        "status":"success",
+        "data":[{
+            "uid":"I7ze3UyWXqPB1S6HC0fGt6In7Nx1",
+            "alerts":{
+                "thunder":true,
+                "rain":true
+            },
+            "preferences":{
+                "locations":[
+                    "kuala-lumpur",
+                    "petaling-jaya",
+                    "subang-jaya"
+                ]
+            },
+            "profile_data":{
+                "email":"",
+                "password":"",
+                "username":""
+            }
+        }],
+        "error":null
+    }
+    """
     try:
         res = []
         docs = db.collection("profiles").stream()
@@ -82,44 +86,45 @@ async def getProfiles():
         
         return {"status": "success", "data": res}
     except Exception as e:
-        return {"status": "error", "error": e.message}
+        return {"status": "error", "error": e}
 
 
 
-"""
-Returns a JSON of the profile specified by the UID
 
-Takes:
-    uid: str
-    uid <- I7ze3UyWXqPB1S6HC0fGt6In7Nx1
-
-Returns:
-{
-    "status":"success",
-    "data":[{
-        "uid":"I7ze3UyWXqPB1S6HC0fGt6In7Nx1",
-        "alerts":{
-            "thunder":true,
-            "rain":true
-        },
-        "preferences":{
-            "locations":[
-                "kuala-lumpur",
-                "petaling-jaya",
-                "subang-jaya"
-            ]
-        },
-        "profile_data":{
-            "email":"",
-            "password":"",
-            "username":""
-        }
-    }],
-    "error":null
-}
-"""
 @router.post("/profiles/{uid}")
 async def getProfile(uid: str):
+    """
+    Returns a JSON of the profile specified by the UID
+
+    Arguments:
+        uid: str
+        uid <- I7ze3UyWXqPB1S6HC0fGt6In7Nx1
+
+    Returns:
+    {
+        "status":"success",
+        "data":[{
+            "uid":"I7ze3UyWXqPB1S6HC0fGt6In7Nx1",
+            "alerts":{
+                "thunder":true,
+                "rain":true
+            },
+            "preferences":{
+                "locations":[
+                    "kuala-lumpur",
+                    "petaling-jaya",
+                    "subang-jaya"
+                ]
+            },
+            "profile_data":{
+                "email":"",
+                "password":"",
+                "username":""
+            }
+        }],
+        "error":null
+    }
+    """
     try:
         profile_ref = db.collection("profiles").document(uid)
         profile = profile_ref.get()
@@ -138,29 +143,30 @@ async def getProfile(uid: str):
             return {"status": "error", "error":"Profile not found"}
     
     except Exception as e:
-        return {"status": "error", "error": e.message}
+        return {"status": "error", "error": e}
 
     
-"""
-Returns a JSON of the preferences for the given UID
 
-Takes:
-    uid: str
-    uid <- I7ze3UyWXqPB1S6HC0fGt6In7Nx1
-
-Returns:
-{
-    "status":"success",
-    "data":[
-            "kuala-lumpur",
-            "petaling-jaya",
-            "subang-jaya"
-    ]
-    "error":null
-}
-"""    
 @router.post("/profiles/{uid}/get_locations")
 async def getPreferences(uid: str):
+    """
+    Returns a JSON of the preferences for the given UID
+
+    Arguments:
+        uid: str
+        uid <- I7ze3UyWXqPB1S6HC0fGt6In7Nx1
+
+    Returns:
+    {
+        "status":"success",
+        "data":[
+                "kuala-lumpur",
+                "petaling-jaya",
+                "subang-jaya"
+        ]
+        "error":null
+    }
+    """    
     try:
         profile_ref = db.collection("profiles").document(uid)
         profile = profile_ref.get()
@@ -174,49 +180,61 @@ async def getPreferences(uid: str):
             return {"status": "error", "error": "Profile not found"}
     
     except Exception as e:
-        return {"status": "error", "error": e.message}
+        return {"status": "error", "error": e}
 
 
 @router.post("/profiles/{uid}/preferences/forecast")
 async def getPreferencesForecast(uid: str):
+    """
+    Returns a JSON containing the forecast for all locations in the preferences
+    of the respective user.
+    
+    Arguments:
+        uid: str
+        uid <- I7ze3UyWXqPB1S6HC0fGt6In7Nx1
+    
+    Return:
+    See: https://openweathermap.org/current#example_JSON 
+    """ 
     try:
         response = await getPreferences(uid)
         res = {}
         for loc in response.get('data'):
-            
+            print(loc)
             res[loc] = await getCurrentWeather(currentBody(location=loc))
         return {"success": True, "data": res}
 
     except Exception as e:
-        return {"success": False, "error": e.message}
+        return {"success": False, "error": e}
     
-"""
-Returns a JSON of all subscribed emails
 
-Return:
-{
-    "status":"success",
-    "data":[
-        [
-            "email": email,
-            [
-                "kuala-lumpur",
-                "petaling-jaya",
-                "subang-jaya"
-            ]
-        ],
-                [
-            "email": second- email,
-            [
-                "kuala-lumpur",
-            ]
-        ]
-    ]
-    "error":null
-}
-"""    
 @router.get("/profiles/subscriptions")
 async def get_subscriptions():
+    """
+    Returns a JSON of all subscribed emails
+
+    Return:
+    {
+        "status":"success",
+        "data":[
+            [
+                "email": email,
+                [
+                    "kuala-lumpur",
+                    "petaling-jaya",
+                    "subang-jaya"
+                ]
+            ],
+                    [
+                "email": second- email,
+                [
+                    "kuala-lumpur",
+                ]
+            ]
+        ]
+        "error":null
+    }
+    """    
     try:
         emails = []
         data = await getProfiles()

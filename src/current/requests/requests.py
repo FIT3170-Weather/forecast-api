@@ -64,7 +64,7 @@ Return:
     }
 """    
 @router.get("/all-locations-current")
-async def getCurrentWeather():
+async def getAllCurrentWeather():
     locations = loc.Locations().getLocations()
 
     location_codes = []
