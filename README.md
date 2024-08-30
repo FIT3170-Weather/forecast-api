@@ -3,12 +3,11 @@
 ## Table of Contents
 1. [Project Overview](#project-overview)
 2. [Software Requirements](#software-requirements)
-3. [Hardware Requirements](#hardware-requirements)
-4. [Setup and Installation Instructions](#setup-and-installation-instructions)
-5. [How to Run the Project](#how-to-run-the-project)
-6. [Common Issues and Troubleshooting](#common-issues-and-troubleshooting)
-7. [Additional Notes](#additional-notes)
-8. [Contact Information](#contact-information)
+3. [Setup and Installation Instructions](#setup-and-installation-instructions)
+4. [How to Run the Project](#how-to-run-the-project)
+5. [Common Issues and Troubleshooting](#common-issues-and-troubleshooting)
+6. [Additional Notes](#additional-notes)
+7. [Contact Information](#contact-information)
 
 ## Project Overview
 CliMate is a weather application that provides weather information, within Malaysia for a 14 day window, 7 days in the past and 7 days in the future.
@@ -18,22 +17,23 @@ The application is a web app that is built using NodeJS, SvelteKit, TailwindCSS,
 There is a machine learning component to this web app, which predicts the weather for the next 7 days. This component is hosted in another repository.
 
 ## Software Requirements
-List all software, dependencies, and versions required to run the project. This may include:
-- Programming languages (e.g., Python 3.x)
-- Libraries and frameworks (e.g., MetPy, Flask, etc.)
-- Any other software (e.g., IDEs, build tools)
-
-### Example:
-- Python 3.9+
-- Flask 2.1.0
-- MetPy 1.3.1
-- Jupyter Notebook
-
-## Hardware Requirements
-If applicable, mention any specific hardware requirements or considerations:
-- Sensors
-- Development boards
-- Specific configurations needed for testing
+- python3==3.9+
+- tensorflow==2.17.0
+- scikit-learn==1.5.1
+- joblib==1.4.2
+- numpy==1.26.4
+- seaborn==0.13.2
+- pandas==2.2.2
+- matplotlib==3.9.2
+- requests-cache==1.2.1
+- openmeteo-requests
+- retry-requests
+- firebase-admin==6.5.0
+- google-cloud-firestore==2.17.2
+- google-cloud-core==2.4.1
+- fastapi==0.112.1
+- uvicorn==0.30.6
+- protobuf==3.20.3
 
 ## API Docs
 
