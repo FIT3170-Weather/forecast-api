@@ -1,7 +1,7 @@
 # Tested with python 3.10.8 - 3.10.14
 
 # TensorFlow version
-keras
+keras==2.10.0
 scikit-learn==1.5.1
 joblib==1.4.2
 
@@ -24,5 +24,5 @@ fastapi==0.112.1
 uvicorn==0.30.6
 
 # Download these seperate dependency seperately
-tensorflow
-protobuf
+#tensorflow==2.10.0
+#protobuf==3.20.3
