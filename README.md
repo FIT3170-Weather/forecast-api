@@ -17,23 +17,36 @@ The application is a web app that is built using NodeJS, SvelteKit, TailwindCSS,
 There is a machine learning component to this web app, which predicts the weather for the next 7 days. This component is hosted in another repository.
 
 ## Software Requirements
-- python3==3.9+
-- tensorflow==2.17.0
-- scikit-learn==1.5.1
-- joblib==1.4.2
-- numpy==1.26.4
-- seaborn==0.13.2
-- pandas==2.2.2
-- matplotlib==3.9.2
-- requests-cache==1.2.1
-- openmeteo-requests
-- retry-requests
-- firebase-admin==6.5.0
-- google-cloud-firestore==2.17.2
-- google-cloud-core==2.4.1
-- fastapi==0.112.1
-- uvicorn==0.30.6
-- protobuf==3.20.3
+
+### Python version
+- **python3**: 3.10.8 - 3.10.14
+
+### Core Libraries
+- **tensorflow**: 2.17.0
+- **keras**: 3.6.0
+- **scikit-learn**: 1.5.1
+- **joblib**: 1.4.2
+- **numpy**: 1.26.4
+- **seaborn**: 0.13.2
+- **pandas**: 2.2.2
+- **matplotlib**: 3.9.2
+
+### HTTP and Request Handling
+- **requests-cache**: 1.2.1
+- **openmeteo-requests**: 1.3.0
+- **retry-requests**: 2.0.0
+
+### Firebase Dependencies
+- **firebase-admin**: 6.5.0
+- **google-cloud-firestore**: 2.17.2
+- **google-cloud-core**: 2.4.1
+
+### Web Framework and Server
+- **fastapi**: 0.112.1
+- **uvicorn**: 0.30.6
+
+### Additional
+- **protobuf**: 3.20.3
 
 ## API Docs
 
