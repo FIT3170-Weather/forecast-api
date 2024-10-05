@@ -126,6 +126,105 @@ Response: {<br>
     "data": [str]<br>
 }<br><br>
 
+### Create a profile using UID
+Request: POST localhost:8000/profiles/create
+
+Request body:
+```json
+{
+    "uid": str,
+    "profile_data": {
+        "username": str,
+        "email": str,
+        "alerts": bool,
+        "home_location": str
+    }
+}
+```
+
+Response:
+```json
+{
+    "success": bool,
+    "message": str
+}
+```
+
+### Add location to profile
+Request: POST localhost:8000/profiles/{uid}/locations/add
+
+Request body:
+```json
+{
+    "location": str
+}
+```
+
+Response:
+```json
+{
+    "success": bool,
+    "message": str
+}
+```
+
+### Remove location from profile
+Request: POST localhost:8000/profiles/{uid}/locations/remove
+
+Request body:
+```json
+{
+    "location": str
+}
+```
+
+Response:
+```json
+{
+    "success": bool,
+    "message": str
+}
+```
+
+### Edit profile data
+Request: POST localhost:8000/profiles/{uid}/edit
+
+Request body:
+```json
+{
+    "username": str,
+    "email": str,
+    "alerts": bool,
+    "home_location": str
+}
+```
+
+Response:
+```json
+{
+    "success": bool,
+    "message": str
+}
+```
+
+### Change alert state for a profile
+Request: POST localhost:8000/profiles/{uid}/alerts
+
+Request body:
+```json
+{
+    "alerts": bool
+}
+```
+
+Response:
+```json
+{
+    "success": bool,
+    "message": str
+}
+```
+
 ## Setup and Installation Instructions
 
 1. Execute the following command in a new Terminal to download all required dependencies and packages:
