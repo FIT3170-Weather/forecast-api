@@ -70,7 +70,7 @@ Request: GET localhost:8000/variables<br>
 ## Setup and Installation Instructions
 
 1. Execute the following command in a new Terminal to download all required dependencies and packages:
-    `npm install -r requirements.txt --user`
+    `pip install -r requirements.txt --user`
 
 2. 
 
