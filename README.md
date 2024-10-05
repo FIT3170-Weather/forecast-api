@@ -247,7 +247,11 @@ You may have to pip install dependencies such as uvicorn, fastapi etc. <br><br>
 
 List common errors or issues developers might encounter, along with their solutions. This section is especially helpful for future developers.
 
-### Example:
+### Issue 1: Mismatch of python version error (Module name could not be resolved)
+1. Ensure that the latest version of python is installed. Python 3.12+
+
+### Issue 2: Service account key error 
+1. Contact @dlim0036@student.monash.edu for the regeneration of a new service account key. 
 
 ## Additional Notes
 Provide any extra information that doesn’t fit in the other sections
