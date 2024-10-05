@@ -38,93 +38,109 @@ There is a machine learning component to this web app, which predicts the weathe
 ## API Docs
 
 ### Current weather
-Request: POST localhost:8000/current <br><br>
+Request: POST localhost:8000/current
 
-Body: { <br>
-    location: str <br>
-} <br><br>
+Request body:
+```json
+{
+    "location": str
+}
+```
 
-Response: https://openweathermap.org/current#example_JSON<br><br>
+Response:
+[https://openweathermap.org/current#example_JSON](https://openweathermap.org/current#example_JSON)
 
 ### Forecast
-Request: POST localhost:8000/forecast<br><br>
+Request: POST localhost:8000/forecast
 
-Body: {<br>
-    location: str<br>
-    forecastType: str<br>
-    variables: list[str]<br>
-}<br><br>
+Request body:
+```json
+{
+    "location": str,
+    "forecastType": str,
+    "variables": [str]
+}
+```
 
-Response: {<br>
-        success: bool<br>
-        temperature: list[float] (optional, only if requested)<br>
-        humidity: list[float] (optional, only if requested)<br>
-        precipitation: list[float] (optional, only if requested)<br>
-}<br><br>
+Response:
+```json
+{
+    "success": bool,
+    "temperature": [float] (optional, only if requested),
+    "humidity": [float] (optional, only if requested),
+    "precipitation": [float] (optional, only if requested)
+}
+```
 
-### Getting location, forecastType and variables
-Request: GET localhost:8000/location<br>
-Request: GET localhost:8000/forecastTypes<br>
-Request: GET localhost:8000/variables<br>
+### Getting location, forecastType, and variables
+Request: GET localhost:8000/location
 
-### Get all profiles:
-Request: GET localhost:8000/profiles<br>
+Request: GET localhost:8000/forecastTypes
 
-### Get specifc profile:
+Request: GET localhost:8000/variables
+
+
+### Get all profiles
+Request: GET localhost:8000/profiles
+
+### Get specific profile
 Request: POST localhost:8000/profiles/{uid}
 
-Response: {<br>
-  "detail": [ <br>
-    {<br>
-      "loc": [<br>
-        "string",<br>
-        0<br>
-      ],<br>
-      "msg": "string",<br>
-      "type": "string"<br>
-    }<br>
-  ]<br>
-}<br><br>
+Response:
+```json
+{
+    "detail": [
+        {
+            "loc": ["string", 0],
+            "msg": "string",
+            "type": "string"
+        }
+    ]
+}
+```
 
-### Get specific profile saved locations:
+### Get specific profile saved locations
 Request: POST localhost:8000/profiles/{uid}/get_locations
 
-Response: {<br>
-  "detail": [<br>
-    {<br>
-      "loc": [<br>
-        "string",<br>
-        0<br>
-      ],<br>
-      "msg": "string",<br>
-      "type": "string"<br>
-    }<br>
-  ]<br>
-}<br><br>
+Response:
+```json
+{
+    "detail": [
+        {
+            "loc": ["string", 0],
+            "msg": "string",
+            "type": "string"
+        }
+    ]
+}
+```
 
-### Get forecast of saved locations:
+### Get forecast of saved locations
 Request: POST localhost:8000/profiles/{uid}/preferences/forecast
 
-Response: {<br>
-  "detail": [<br>
-    {<br>
-      "loc": [<br>
-        "string",<br>
-        0<br>
-      ],<br>
-      "msg": "string",<br>
-      "type": "string"<br>
-    }<br>
-  ]<br>
-}<br><br>
+Response:
+```json
+{
+    "detail": [
+        {
+            "loc": ["string", 0],
+            "msg": "string",
+            "type": "string"
+        }
+    ]
+}
+```
 
-### Get email of all profiles that has subscribed to email notifications
+### Get email of all profiles that have subscribed to email notifications
 Request: POST localhost:8000/profiles/subscriptions
 
-Response: {<br>
-    "success": bool<br>
-    "data": [str]<br>
-}<br><br>
+Response:
+```json
+{
+    "success": bool,
+    "data": [str]
+}
+```
 
 ### Create a profile using UID
 Request: POST localhost:8000/profiles/create
