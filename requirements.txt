@@ -1,7 +1,7 @@
 # Tested with python 3.10.8 - 3.10.14
 
 # TensorFlow version
-keras
+keras==3.6.0
 scikit-learn==1.5.1
 joblib==1.4.2
 
@@ -11,8 +11,8 @@ pandas==2.2.2
 matplotlib==3.9.2
 
 requests-cache==1.2.1
-openmeteo-requests
-retry-requests
+openmeteo-requests==1.3.0
+retry-requests==2.0.0
 
 # Firebase dependencies
 firebase-admin==6.5.0
@@ -22,7 +22,8 @@ google-cloud-core==2.4.1
 # Server dependencies
 fastapi==0.112.1
 uvicorn==0.30.6
+pandas==2.2.2
 
 # Download these seperate dependency seperately
-tensorflow
-protobuf
+tensorflow==2.17.0
+protobuf==3.20.3

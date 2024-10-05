@@ -68,7 +68,11 @@ Request: GET localhost:8000/forecastTypes<br>
 Request: GET localhost:8000/variables<br>
 
 ## Setup and Installation Instructions
-Provide step-by-step instructions on how to set up the development environment and install the necessary dependencies.
+
+1. Execute the following command in a new Terminal to download all required dependencies and packages:
+    `npm install -r requirements.txt --user`
+
+2. 
 
 ### Example:
 
