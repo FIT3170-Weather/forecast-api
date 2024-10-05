@@ -34,6 +34,7 @@ There is a machine learning component to this web app, which predicts the weathe
 - fastapi==0.112.1
 - uvicorn==0.30.6
 - protobuf==3.20.3
+- keras==3.2.0
 
 ## API Docs
 
