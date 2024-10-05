@@ -37,7 +37,7 @@ There is a machine learning component to this web app, which predicts the weathe
 
 ## API Docs
 
-## Current weather
+### Current weather
 Request: POST localhost:8000/current <br><br>
 
 Body: { <br>
@@ -46,7 +46,7 @@ Body: { <br>
 
 Response: https://openweathermap.org/current#example_JSON<br><br>
 
-## Forecast
+### Forecast
 Request: POST localhost:8000/forecast<br><br>
 
 Body: {<br>
@@ -62,17 +62,77 @@ Response: {<br>
         precipitation: list[float] (optional, only if requested)<br>
 }<br><br>
 
-## Getting location, forecastType and variables
+### Getting location, forecastType and variables
 Request: GET localhost:8000/location<br>
 Request: GET localhost:8000/forecastTypes<br>
 Request: GET localhost:8000/variables<br>
 
+### Get all profiles:
+Request: GET localhost:8000/profiles<br>
+
+### Get specifc profile:
+Request: POST localhost:8000/profiles/{uid}
+
+Response: {<br>
+  "detail": [ <br>
+    {<br>
+      "loc": [<br>
+        "string",<br>
+        0<br>
+      ],<br>
+      "msg": "string",<br>
+      "type": "string"<br>
+    }<br>
+  ]<br>
+}<br><br>
+
+### Get specific profile saved locations:
+Request: POST localhost:8000/profiles/{uid}/get_locations
+
+Response: {<br>
+  "detail": [<br>
+    {<br>
+      "loc": [<br>
+        "string",<br>
+        0<br>
+      ],<br>
+      "msg": "string",<br>
+      "type": "string"<br>
+    }<br>
+  ]<br>
+}<br><br>
+
+### Get forecast of saved locations:
+Request: POST localhost:8000/profiles/{uid}/preferences/forecast
+
+Response: {<br>
+  "detail": [<br>
+    {<br>
+      "loc": [<br>
+        "string",<br>
+        0<br>
+      ],<br>
+      "msg": "string",<br>
+      "type": "string"<br>
+    }<br>
+  ]<br>
+}<br><br>
+
+### Get email of all profiles that has subscribed to email notifications
+Request: POST localhost:8000/profiles/subscriptions
+
+Response: {<br>
+    "success": bool<br>
+    "data": [str]<br>
+}<br><br>
+
 ## Setup and Installation Instructions
 
 1. Execute the following command in a new Terminal to download all required dependencies and packages:
-    `pip install -r requirements.txt --user`
+    `pip install -r requirements.txt --user` <br>
 
-2. 
+2. Email `dlim0036@student.monash.edu` to request for the Firebase Access and  `serviceAccountKey.json` file.<br>
+3. Put the `serviceAccountKey.json` into the root directory of the code base.<br><br>
 
 ### Example:
 
