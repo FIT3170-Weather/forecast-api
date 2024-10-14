@@ -17,60 +17,250 @@ The application is a web app that is built using NodeJS, SvelteKit, TailwindCSS,
 There is a machine learning component to this web app, which predicts the weather for the next 7 days. This component is hosted in another repository.
 
 ## Software Requirements
-- python3==3.9+
-- tensorflow==2.17.0
-- scikit-learn==1.5.1
-- joblib==1.4.2
-- numpy==1.26.4
-- seaborn==0.13.2
-- pandas==2.2.2
-- matplotlib==3.9.2
-- requests-cache==1.2.1
-- openmeteo-requests
-- retry-requests
-- firebase-admin==6.5.0
-- google-cloud-firestore==2.17.2
-- google-cloud-core==2.4.1
-- fastapi==0.112.1
-- uvicorn==0.30.6
-- protobuf==3.20.3
+
+### Python version
+- **python3**: 3.10.8 - 3.10.14
+
+### Core Libraries
+- **tensorflow**: 2.17.0
+- **keras**: 3.6.0
+- **scikit-learn**: 1.5.1
+- **joblib**: 1.4.2
+- **numpy**: 1.26.4
+- **seaborn**: 0.13.2
+- **pandas**: 2.2.2
+- **matplotlib**: 3.9.2
+
+### HTTP and Request Handling
+- **requests-cache**: 1.2.1
+- **openmeteo-requests**: 1.3.0
+- **retry-requests**: 2.0.0
+
+### Firebase Dependencies
+- **firebase-admin**: 6.5.0
+- **google-cloud-firestore**: 2.17.2
+- **google-cloud-core**: 2.4.1
+
+### Web Framework and Server
+- **fastapi**: 0.112.1
+- **uvicorn**: 0.30.6
+
+### Additional
+- **protobuf**: 3.20.3
 
 ## API Docs
 
-## Current weather
-Request: POST localhost:8000/current <br><br>
+### Current weather
+Request: POST localhost:8000/current
 
-Body: { <br>
-    location: str <br>
-} <br><br>
+Request body:
+```json
+{
+    "location": str
+}
+```
 
-Response: https://openweathermap.org/current#example_JSON<br><br>
+Response:
+[https://openweathermap.org/current#example_JSON](https://openweathermap.org/current#example_JSON)
 
-## Forecast
-Request: POST localhost:8000/forecast<br><br>
+### Forecast
+Request: POST localhost:8000/forecast
 
-Body: {<br>
-    location: str<br>
-    forecastType: str<br>
-    variables: list[str]<br>
-}<br><br>
+Request body:
+```json
+{
+    "location": str,
+    "forecastType": str,
+    "variables": [str]
+}
+```
 
-Response: {<br>
-        success: bool<br>
-        temperature: list[float] (optional, only if requested)<br>
-        humidity: list[float] (optional, only if requested)<br>
-        precipitation: list[float] (optional, only if requested)<br>
-}<br><br>
+Response:
+```json
+{
+    "success": bool,
+    "temperature": [float] (optional, only if requested),
+    "humidity": [float] (optional, only if requested),
+    "precipitation": [float] (optional, only if requested)
+}
+```
 
-## Getting location, forecastType and variables
-Request: GET localhost:8000/location<br>
-Request: GET localhost:8000/forecastTypes<br>
-Request: GET localhost:8000/variables<br>
+### Getting location, forecastType, and variables
+Request: GET localhost:8000/location
+
+Request: GET localhost:8000/forecastTypes
+
+Request: GET localhost:8000/variables
+
+
+### Get all profiles
+Request: GET localhost:8000/profiles
+
+### Get specific profile
+Request: POST localhost:8000/profiles/{uid}
+
+Response:
+```json
+{
+    "detail": [
+        {
+            "loc": ["string", 0],
+            "msg": "string",
+            "type": "string"
+        }
+    ]
+}
+```
+
+### Get specific profile saved locations
+Request: POST localhost:8000/profiles/{uid}/get_locations
+
+Response:
+```json
+{
+    "detail": [
+        {
+            "loc": ["string", 0],
+            "msg": "string",
+            "type": "string"
+        }
+    ]
+}
+```
+
+### Get forecast of saved locations
+Request: POST localhost:8000/profiles/{uid}/preferences/forecast
+
+Response:
+```json
+{
+    "detail": [
+        {
+            "loc": ["string", 0],
+            "msg": "string",
+            "type": "string"
+        }
+    ]
+}
+```
+
+### Get email of all profiles that have subscribed to email notifications
+Request: POST localhost:8000/profiles/subscriptions
+
+Response:
+```json
+{
+    "success": bool,
+    "data": [str]
+}
+```
+
+### Create a profile using UID
+Request: POST localhost:8000/profiles/create
+
+Request body:
+```json
+{
+    "uid": str,
+    "profile_data": {
+        "username": str,
+        "email": str,
+        "alerts": bool,
+        "home_location": str
+    }
+}
+```
+
+Response:
+```json
+{
+    "success": bool,
+    "message": str
+}
+```
+
+### Add location to profile
+Request: POST localhost:8000/profiles/{uid}/locations/add
+
+Request body:
+```json
+{
+    "location": str
+}
+```
+
+Response:
+```json
+{
+    "success": bool,
+    "message": str
+}
+```
+
+### Remove location from profile
+Request: POST localhost:8000/profiles/{uid}/locations/remove
+
+Request body:
+```json
+{
+    "location": str
+}
+```
+
+Response:
+```json
+{
+    "success": bool,
+    "message": str
+}
+```
+
+### Edit profile data
+Request: POST localhost:8000/profiles/{uid}/edit
+
+Request body:
+```json
+{
+    "username": str,
+    "email": str,
+    "alerts": bool,
+    "home_location": str
+}
+```
+
+Response:
+```json
+{
+    "success": bool,
+    "message": str
+}
+```
+
+### Change alert state for a profile
+Request: POST localhost:8000/profiles/{uid}/alerts
+
+Request body:
+```json
+{
+    "alerts": bool
+}
+```
+
+Response:
+```json
+{
+    "success": bool,
+    "message": str
+}
+```
 
 ## Setup and Installation Instructions
-1. Run the following command in the terminal to install all required dependencies: "npm install -r requirements.txt"
 
-2. serviceAccountKey.json <= contact someone?
+1. Execute the following command in a new Terminal to download all required dependencies and packages:
+    `pip install -r requirements.txt --user` <br>
+
+2. Email `dlim0036@student.monash.edu` to request for the Firebase Access and  `serviceAccountKey.json` file.<br>
+3. Put the `serviceAccountKey.json` into the root directory of the code base.<br><br>
 
 ### Example:
 
@@ -86,7 +276,11 @@ You may have to pip install dependencies such as uvicorn, fastapi etc. <br><br>
 
 List common errors or issues developers might encounter, along with their solutions. This section is especially helpful for future developers.
 
-### Example:
+### Issue 1: Mismatch of python version error (Module name could not be resolved)
+1. Ensure that the latest version of python is installed. Python 3.12+
+
+### Issue 2: Service account key error 
+1. Contact @dlim0036@student.monash.edu for the regeneration of a new service account key. 
 
 ## Additional Notes
 Provide any extra information that doesn’t fit in the other sections
