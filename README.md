@@ -256,7 +256,7 @@ Response:
 
 ## Setup and Installation Instructions
 
-1. Execute the following command in a new Terminal to download all required dependencies and packages:
+1. Execute the following command in a new Terminal to download all required dependencies and packages:<br>
     `pip install -r requirements.txt --user` <br>
 
 2. Email `dlim0036@student.monash.edu` to request for the Firebase Access and  `serviceAccountKey.json` file.<br>
