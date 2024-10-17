@@ -22,8 +22,8 @@ There is a machine learning component to this web app, which predicts the weathe
 - **python3**: 3.10.8 - 3.10.14
 
 ### Core Libraries
-- **tensorflow**: 2.17.0
-- **keras**: 3.6.0
+- **tensorflow**: 2.10.0
+- **keras**: 2.10.0
 - **scikit-learn**: 1.5.1
 - **joblib**: 1.4.2
 - **numpy**: 1.26.4
@@ -259,8 +259,12 @@ Response:
 1. Execute the following command in a new Terminal to download all required dependencies and packages:<br>
     `pip install -r requirements.txt --user` <br>
 
-2. Email `dlim0036@student.monash.edu` to request for the Firebase Access and  `serviceAccountKey.json` file.<br>
-3. Put the `serviceAccountKey.json` into the root directory of the code base.<br><br>
+2. Execute the following 2 commands to install the remaining dependencies:
+    `pip install tensorflow==2.10.0`<br>
+    `pip install protobuf==3.20.3`<br>
+
+3. Email `dlim0036@student.monash.edu` to request for the Firebase Access and  `serviceAccountKey.json` file.<br>
+4. Put the `serviceAccountKey.json` into the root directory of the code base.<br><br>
 
 ### Example:
 
